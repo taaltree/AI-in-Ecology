@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Python Environments &amp; Conda · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="python-intro.html">Python Crash Course</a>
+    <a href="environments.html" class="current">Python Environments &amp; Conda</a>
+    <a href="pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="claude-code.html">Claude Code Setup</a>
+    <a href="claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="../labs/lab1.html">Lab 1 · Python</a>
+    <a href="../labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="../labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="../labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="../labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="../labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="../labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="../labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="../labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="../labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="../labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Python Environments &amp; Conda</h1>
+  <p class="lead">Why ecologists who never thought they'd touch a package manager need one
+    anyway, and how to set it up so you don't fight your laptop for the rest of the
+    course.</p>
+
+  <h2>1. The problem environments solve</h2>
+
+  <p>Here is a real situation you will hit in this course (and in every Python project for
+    the rest of your career):</p>
+
+  <ul>
+    <li>Lab 6 uses <strong><code>birdnet</code></strong>, which pulls in
+      <code>tensorflow 2.21</code>.</li>
+    <li>Lab 7 uses <strong>PNW-Cnet via <code>pycnet-audio</code></strong>, which needs
+      <strong>Python 3.8&ndash;3.11</strong> and a specific <code>tensorflow</code> version.</li>
+    <li>Lab 2 / 5 use <strong>PyTorch</strong>, which works fine on Python 3.13 but pulls in
+      its own NumPy preferences.</li>
+    <li>Your operating system may also have its own Python (macOS ships 3.13; Ubuntu 3.12)
+      that you should not pollute with anything project-specific.</li>
+  </ul>
+
+  <p>If you <code>pip install</code> all of these into one Python, sooner or later one will
+    overwrite a shared dependency at a version that breaks another. You'll get a four-line
+    cryptic error, lose two hours debugging, and learn the wrong lesson ("Python is bad").
+    The right lesson is: <em>each project gets its own isolated Python &mdash; an
+    "environment" &mdash; and they don't share packages.</em></p>
+
+  <p>An <strong>environment</strong> is just a folder containing its own Python interpreter
+    and its own copy of every package it needs. When you <em>activate</em> the environment,
+    typing <code>python</code> or <code>pip</code> in your shell uses <em>that</em> folder's
+    Python instead of the system one.</p>
+
+  <h2>2. The cast of characters</h2>
+
+  <table>
+    <tr><th>Name</th><th>What it is</th><th>When to reach for it</th></tr>
+    <tr><td><strong><code>venv</code></strong></td>
+        <td>Built into Python. Creates a lightweight environment that uses your existing
+            Python and installs packages with <code>pip</code>.</td>
+        <td>Quick projects where you already have the right Python version and only need
+            <em>pure-Python</em> packages. Used by the instructor for the answer-key venv
+            (<code>.venv/</code> in the course folder).</td></tr>
+    <tr><td><strong><code>conda</code></strong></td>
+        <td>Heavier. Installs an entire Python interpreter <em>and</em> packages, including
+            non-Python tools like <code>sox</code>, <code>ffmpeg</code>, <code>gdal</code>.</td>
+        <td>Anything ML-flavoured (TensorFlow, PyTorch with CUDA), anything that needs a
+            specific Python version, anything that depends on a binary tool. <strong>This is
+            the default in this course.</strong></td></tr>
+    <tr><td><strong>Miniforge</strong></td>
+        <td>A small conda installer that defaults to the open <code>conda-forge</code>
+            package channel (free of Anaconda's commercial licensing concerns).</td>
+        <td>What we recommend installing. It gives you <code>conda</code> and
+            <code>mamba</code>.</td></tr>
+    <tr><td><strong><code>mamba</code></strong></td>
+        <td>A drop-in replacement for the slow parts of <code>conda</code> (especially
+            dependency solving). Same commands, ~10x faster.</td>
+        <td>Once you have conda working, you may want to substitute
+            <code>mamba</code> for <code>conda</code> in commands like <code>create</code>
+            and <code>install</code>. Ships with Miniforge.</td></tr>
+    <tr><td><strong><code>pip</code></strong></td>
+        <td>The Python-only package installer. Available in any conda or venv env.</td>
+        <td>Inside a conda env, use it for packages that aren't on conda-forge (most ML
+            packages by the time you read this).</td></tr>
+  </table>
+
+  <h2>3. Install Miniforge (one time per laptop)</h2>
+
+  <h3>macOS</h3>
+  <pre><code># Recommended: via Homebrew
+brew install --cask miniforge
+
+# Initialize your shell (zsh is default on modern macOS)
+conda init zsh
+
+# Close and reopen your terminal so the changes take effect.
+# Verify:
+conda --version
+mamba --version</code></pre>
+
+  <h3>Windows</h3>
+  <p>Two equally fine options:</p>
+  <pre><code># Option A: WinGet
+winget install CondaForge.Miniforge3
+
+# Option B: Download from https://github.com/conda-forge/miniforge and run the .exe
+# Accept all defaults.
+
+# Verify in a NEW PowerShell:
+conda --version
+mamba --version</code></pre>
+
+  <p>Windows users: search the Start menu for "<strong>Miniforge Prompt</strong>" the first
+    time. It's a pre-configured terminal where <code>conda</code> already works. After
+    <code>conda init powershell</code>, regular PowerShell will work too.</p>
+
+  <h3>Linux / WSL</h3>
+  <pre><code>curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+bash Miniforge3-*.sh -b -p ~/miniforge3
+~/miniforge3/bin/conda init bash      # or zsh, fish, etc.
+# Restart shell, verify:
+conda --version</code></pre>
+
+  <h2>4. Your first environment (do this once now)</h2>
+
+  <p>Let's make the course environment you'll use for all the Python labs:</p>
+
+  <pre><code># Create a fresh env called "aiecol" with Python 3.11 (the sweet spot — works with
+# pycnet-audio AND PyTorch AND birdnet at the same time).
+mamba create -n aiecol -c conda-forge python=3.11 sox ffmpeg -y
+
+# Switch into it
+conda activate aiecol
+# Your prompt now shows (aiecol).
+
+# Install the Python packages. We use pip here because most ML packages publish to
+# PyPI faster than to conda-forge. This is a totally normal and supported pattern
+# inside a conda env.
+pip install numpy pandas matplotlib scikit-learn pillow requests exifread \
+            soundfile librosa pyyaml tqdm \
+            torch torchvision \
+            ultralytics birdnet
+
+# Sanity check
+python -c "import torch, ultralytics, librosa, birdnet; print('all good')"</code></pre>
+
+  <p>That's it. You now have one isolated environment with everything Lab 2&ndash;7 needs.
+    Whenever you start a new terminal session and want to work on the course, run:</p>
+
+  <pre><code>conda activate aiecol</code></pre>
+
+  <p>and your prompt will say <code>(aiecol)</code> instead of <code>(base)</code>. To leave
+    it (and return to the base/system Python):</p>
+
+  <pre><code>conda deactivate</code></pre>
+
+  <div class="callout tip">
+    <strong>What's <code>(base)</code>?</strong> Every Miniforge install ships with a
+    "base" environment that is auto-activated when you open a terminal. <em>Never install
+    project packages into <code>base</code>.</em> Always create a named env per project.
+    The base env is for <code>conda</code> itself.
+  </div>
+
+  <h2>5. The second environment &mdash; an example of why this matters</h2>
+
+  <p>For Lab 7 we use PNW-Cnet via <code>pycnet-audio</code>, which is fussier &mdash; it
+    requires Python 3.8&ndash;3.11 <em>and</em> a specific TensorFlow version that fights
+    with <code>birdnet</code>'s newer TensorFlow. Easiest fix: a separate environment for
+    that one tool.</p>
+
+  <pre><code>mamba create -n pycnet -c conda-forge sox python=3.11 -y
+conda activate pycnet
+pip install pycnet-audio
+
+# Use it
+pycnet process /path/to/audio -c v5 -a
+
+# When done, go back to your main course env
+conda deactivate
+conda activate aiecol</code></pre>
+
+  <p>You now have two envs: <code>aiecol</code> (everything else) and <code>pycnet</code>
+    (just PNW-Cnet). Switching between them is free.</p>
+
+  <h2>6. <code>environment.yml</code> &mdash; saving and sharing an env</h2>
+
+  <p>When your project gets serious (a manuscript, a thesis, your final project for this
+    course), <em>write down exactly what's in your env</em> so you and your collaborators
+    can recreate it later. The standard way is an <code>environment.yml</code> file:</p>
+
+  <pre><code># Dump the current env to a portable file
+conda env export --from-history > environment.yml
+
+# Or, more commonly, write it by hand to be deliberate:
+cat &gt; environment.yml &lt;&lt;'EOF'
+name: my_project
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - sox
+  - ffmpeg
+  - pip
+  - pip:
+      - numpy
+      - pandas
+      - librosa
+      - birdnet
+EOF
+
+# Recreate it later (yours or a colleague's machine)
+mamba env create -f environment.yml
+conda activate my_project</code></pre>
+
+  <div class="callout note">
+    <strong>Why <code>--from-history</code>?</strong> A raw <code>conda env export</code>
+    lists every transitive dependency at exact versions, which often doesn't reproduce
+    cross-platform (a macOS export won't install on Linux because some packages have
+    different platform-specific builds). <code>--from-history</code> exports only the
+    packages you explicitly asked for &mdash; much more portable.
+  </div>
+
+  <p>Commit <code>environment.yml</code> to git. Don't commit the env folder itself; add
+    <code>.conda/</code> and <code>envs/</code> to your <code>.gitignore</code>.</p>
+
+  <h2>7. <code>pip</code> vs <code>conda</code> &mdash; when to use which</h2>
+
+  <p>Inside a conda env, both <code>pip install X</code> and <code>conda install X</code>
+    work. Which should you pick?</p>
+
+  <ul>
+    <li><strong>Use <code>conda</code> (or <code>mamba</code>) for:</strong> Python
+      itself, anything with native compiled code that's tricky to build
+      (<code>gdal</code>, <code>geos</code>, <code>cartopy</code>, <code>r-base</code>),
+      non-Python tools (<code>sox</code>, <code>ffmpeg</code>, <code>git</code>).
+      <strong>If a package is available on conda-forge, prefer that.</strong></li>
+    <li><strong>Use <code>pip</code> for:</strong> ML frameworks that ship newest on PyPI
+      (<code>torch</code>, <code>ultralytics</code>, <code>birdnet</code>,
+      <code>pycnet-audio</code>) and small pure-Python packages.</li>
+    <li><strong>Don't mix them for the same package.</strong> If you install
+      <code>numpy</code> with conda and later <code>pip install -U numpy</code>, conda's
+      bookkeeping gets out of sync and weird things happen. Pick one source per package.</li>
+    <li><strong>Always install conda packages first</strong>, then pip packages, when
+      building a new env. That way pip sees the conda-installed dependencies and doesn't
+      try to replace them.</li>
+  </ul>
+
+  <h2>8. Activating envs in different tools</h2>
+
+  <h3>RStudio terminal pane</h3>
+  <p>RStudio's Terminal tab opens a normal shell. Just type
+    <code>conda activate aiecol</code> and you're in. You may need to first
+    <code>conda init zsh</code> (macOS) or <code>conda init bash</code> (Linux) once for
+    that shell to know about conda.</p>
+
+  <h3>Claude Code</h3>
+  <p>Same trick &mdash; Claude Code runs commands in a normal shell. Before starting
+    Claude, activate your env in that terminal. Or, to make it automatic per project, add
+    to your project's <code>CLAUDE.md</code>:</p>
+  <pre><code># in CLAUDE.md
+Always run Python via the `aiecol` conda env. Never `pip install` into base.
+If a command needs the env, prefix with `conda run -n aiecol`.</code></pre>
+  <p>You can also use <code>conda run -n aiecol python ...</code> for one-off commands
+    without changing the active env.</p>
+
+  <h3>VS Code</h3>
+  <p>Cmd/Ctrl-Shift-P &rarr; "Python: Select Interpreter" &rarr; pick the one whose path
+    ends in <code>envs/aiecol/bin/python</code>. After that, VS Code's "Run Python File"
+    button and the integrated terminal automatically use that env.</p>
+
+  <h3>Jupyter</h3>
+  <pre><code>conda activate aiecol
+pip install jupyterlab
+python -m ipykernel install --user --name aiecol --display-name "Python (aiecol)"
+
+# Then in JupyterLab, pick the "Python (aiecol)" kernel.</code></pre>
+
+  <h2>9. When you <em>don't</em> need an environment</h2>
+
+  <p>Be honest with yourself; not every script needs a fresh env. If you're:</p>
+  <ul>
+    <li>Writing a 10-line script that only uses the Python standard library, OR</li>
+    <li>Inspecting a CSV with a one-liner in the REPL,</li>
+  </ul>
+  <p>just use the base env or system Python. Spinning up a fresh env for every trivial
+    task gets in the way of fast iteration.</p>
+
+  <p>But: <em>the moment you <code>pip install</code> anything for a one-liner script, it
+    has become a project. Make it an env.</em></p>
+
+  <h2>10. When to use one env per project vs one big env</h2>
+
+  <p>Two reasonable workflows:</p>
+
+  <ul>
+    <li><strong>One env per project</strong> &mdash; the strict-isolation approach.
+      Best for: anything you'll publish, anything you'll share, anything where the
+      exact dependency set matters. Slight tax: more disk space, more switching.</li>
+    <li><strong>One big "everything" env</strong> &mdash; what we use in this course
+      for Labs 1&ndash;6 and 8&ndash;10 (the <code>aiecol</code> env). Best for:
+      coursework and exploration where you're constantly bouncing between tools.
+      Tax: when one tool needs an incompatible version, you have to make a side env
+      (as we do for <code>pycnet</code>).</li>
+  </ul>
+
+  <p>The right default for a research project is <em>one env per repo</em>, with the
+    <code>environment.yml</code> living in the repo root next to <code>README.md</code>.</p>
+
+  <h2>11. Pitfalls and rescue commands</h2>
+
+  <table>
+    <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+    <tr><td><code>conda activate aiecol</code> &rarr; "command not found: conda"</td>
+        <td>You skipped <code>conda init</code>, or the shell hasn't been restarted.</td>
+        <td>Run <code>conda init zsh</code> (or your shell), close the terminal, open
+            a new one.</td></tr>
+    <tr><td>conda solver hangs for many minutes</td>
+        <td>Real conda solver is slow. Many old StackOverflow answers say so.</td>
+        <td>Use <code>mamba</code> instead: <code>mamba install ...</code>. Ships with
+            Miniforge.</td></tr>
+    <tr><td><code>ModuleNotFoundError: No module named 'X'</code> after installing</td>
+        <td>You're not in the env you think you are.</td>
+        <td>Check the env name in your prompt; <code>which python</code> should point at
+            the env's bin folder. Run <code>conda activate &lt;env&gt;</code>.</td></tr>
+    <tr><td>Two envs got mixed up; one is acting weird</td>
+        <td>You pip-installed into base, or pip-overwrote a conda-installed package.</td>
+        <td>Delete and recreate: <code>conda env remove -n broken</code>, then create
+            from your <code>environment.yml</code>.</td></tr>
+    <tr><td>Disk fills up with env folders</td>
+        <td>Each env is ~1&ndash;5 GB, mostly PyTorch wheels.</td>
+        <td><code>conda clean --all</code> reclaims a few GB; <code>conda env list</code>
+            shows what's around; remove old ones with <code>conda env remove -n
+            old_env</code>.</td></tr>
+    <tr><td>"InvalidVersionSpec" or "ResolvePackageNotFound"</td>
+        <td>Two packages require incompatible versions.</td>
+        <td>Pin Python (<code>python=3.11</code>) and the major conflicting package
+            explicitly; try installing one at a time to see which causes the conflict.</td></tr>
+    <tr><td>Apple Silicon: "wheel not available for platform"</td>
+        <td>Some packages don't have arm64 wheels yet.</td>
+        <td>Try conda-forge (broader arm64 coverage); or, as a last resort, set
+            <code>CONDA_SUBDIR=osx-64</code> to install x86_64 versions that run under
+            Rosetta.</td></tr>
+  </table>
+
+  <h2>12. Cheat sheet</h2>
+
+  <pre><code># list all envs
+conda env list
+
+# create new env from scratch
+mamba create -n NAME -c conda-forge python=3.11 PACKAGE1 PACKAGE2 -y
+
+# create from a yml file
+mamba env create -f environment.yml
+
+# activate / deactivate
+conda activate NAME
+conda deactivate
+
+# install / uninstall
+mamba install -c conda-forge PACKAGE          # preferred
+pip install PACKAGE                            # for ML / PyPI-only packages
+
+# save / share
+conda env export --from-history > environment.yml
+git add environment.yml &amp;&amp; git commit -m "freeze env"
+
+# remove
+conda env remove -n NAME
+
+# what version of X is installed?
+conda list PACKAGE
+pip   show  PACKAGE</code></pre>
+
+  <p>One last sanity rule: <strong>if you can't remember whether you're in the right
+    env, run <code>which python</code> (Unix) or <code>where python</code> (Windows).</strong>
+    The path tells you exactly which Python you're about to use. Trust the path, not your
+    memory.</p>
+
+  <p><a href="claude-code.html">→ Continue to Claude Code setup</a></p>
+
+  <footer>Python Environments &amp; Conda &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

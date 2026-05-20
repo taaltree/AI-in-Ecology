@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab 11 · GUI Workflows · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="../tutorials/python-intro.html">Python Crash Course</a>
+    <a href="../tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="../tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="../tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="../tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="../tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="../tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="../tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="../tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="lab1.html">Lab 1 · Python</a>
+    <a href="lab2.html">Lab 2 · PyTorch</a>
+    <a href="lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="lab5.html">Lab 5 · Species Classifier</a>
+    <a href="lab6.html">Lab 6 · BirdNET</a>
+    <a href="lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="lab11.html" class="current">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Lab 11 &middot; GUI Workflows for Labeling &amp; Review (Shiny PNW-Cnet + Njobvu-AI)</h1>
+
+  <div class="lab-meta">
+    <strong>Worth:</strong> 20 points &nbsp;|&nbsp;
+    <strong>When:</strong> Day 4 evening (3 hours, optional but graded if attempted)
+    &nbsp;|&nbsp;
+    <strong>Files to submit:</strong> two short screen recordings (one per
+    tool, ~2 min each) plus a 1-page PDF reflection.<br>
+    <strong>Pre-reading:</strong> all of Days 1&ndash;4, especially the
+    <a href="../tutorials/bioacoustics.html">bioacoustics tutorial</a> and the
+    <a href="lab7.html">Lab 7</a> handout, and Appel et al. 2025 (link below).
+  </div>
+
+  <h2>Why this lab</h2>
+  <p>Up to this point you've done everything in Python or R on the command
+    line. That is great for reproducibility, but in real teams &mdash; field
+    crews, undergraduates, partners across agencies &mdash; not everyone is
+    going to install <code>pycnet-audio</code> in a conda env. The two GUI
+    tools in this lab are the workhorse graphical interfaces in the PNW
+    wildlife community for exactly the same tasks you've been doing on the
+    CLI:</p>
+  <ul>
+    <li><strong>Shiny PNW-Cnet</strong> (Zack Ruff, Oregon State University /
+      Pacific NW Research Station) &mdash; a desktop-style R Shiny app that
+      wraps PNW-Cnet. Field crews can drop a folder of WAVs onto it, set
+      detection thresholds with sliders, and review/verify hits without ever
+      opening a terminal.</li>
+    <li><strong>Njobvu-AI</strong> (Sulli Chrosu, Cara Appel, and others;
+      Appel et al. 2025) &mdash; a browser-based, multi-user platform for
+      collaborative image labeling, custom YOLO/TensorFlow model training, and
+      batch classification. Built for camera-trap and other wildlife-imagery
+      teams who need many people annotating in parallel.</li>
+  </ul>
+
+  <p>The point of this lab is not to learn a third or fourth tool from
+    scratch. It's to learn <em>when a GUI is the right answer</em> &mdash; and
+    how to evaluate one quickly against the CLI workflow you already know.</p>
+
+  <h2>Reading</h2>
+  <p><strong>Required:</strong> Appel, C. L., Subramanian, A., Koning, J. S.,
+    <em>et al.</em> (2025). <em>Developing custom computer vision models with
+    Njobvu-AI: A collaborative, user-friendly platform for ecological
+    research.</em> Ecological Applications.
+    <a href="https://doi.org/10.1002/eap.70096">doi:10.1002/eap.70096</a>.
+    Read end-to-end; this is short and gives you the context for Part 2 of
+    the lab.</p>
+
+  <h2>Part 1 &mdash; Shiny PNW-Cnet (10 pts)</h2>
+
+  <h3>Install</h3>
+  <p>Shiny PNW-Cnet is an R Shiny app, so you need R + Shiny installed (you
+    already have these from Labs 9 and 10). Clone Zack Ruff's repo and follow
+    the README:</p>
+  <pre><code>git clone https://github.com/zjruff/Shiny_PNW-Cnet.git
+cd Shiny_PNW-Cnet</code></pre>
+
+  <p>From R or RStudio:</p>
+  <pre><code># install dependencies once (this can take 5-10 min the first time)
+source("install_dependencies.R")
+
+# Then launch the app
+shiny::runApp(".")</code></pre>
+
+  <p>A browser window opens at <code>http://127.0.0.1:&lt;some port&gt;/</code>
+    with the Shiny UI. If the launch fails on a missing system tool (most
+    commonly SoX or Python), the README has per-OS notes. The app also bundles
+    a one-click Windows installer if you're on a lab/teaching computer.</p>
+
+  <h3>Tasks (Part 1)</h3>
+  <ol>
+    <li><strong>Process a small recording set (4 pts).</strong> Point the app
+      at <code>data_sample/audio/</code>. Use the PNW-Cnet v5 model. Run
+      processing. Take a screenshot of the per-class detection-count summary
+      it produces.</li>
+    <li><strong>Tune review thresholds (3 pts).</strong> Pick three classes of
+      your choice (one common, one rare, one ambiguous). For each, move the
+      score-threshold slider from 0.10 to 0.90 and write down how many
+      detections survive at each step. Same exercise as Lab 6's calibration,
+      but with sliders instead of a Python loop.</li>
+    <li><strong>Review and verify a handful (3 pts).</strong> Pick the top 10
+      detections for one species (your choice). Use the app's review interface
+      to listen to each clip and mark it as confirmed / rejected. Note how
+      many were real; report your verified precision @ the threshold you
+      chose.</li>
+  </ol>
+
+  <h3>Deliverable (Part 1)</h3>
+  <p>A 1&ndash;2 minute screen recording walking through the three tasks
+    above. Software-wise the easiest options are macOS's built-in
+    <span class="kbd">Cmd</span>+<span class="kbd">Shift</span>+<span class="kbd">5</span>
+    or Windows's Game Bar
+    (<span class="kbd">Win</span>+<span class="kbd">G</span>). No voice-over
+    required; on-screen captions are fine.</p>
+
+  <h2>Part 2 &mdash; Njobvu-AI for camera-trap labeling and training (10 pts)</h2>
+
+  <h3>Install</h3>
+  <p>Njobvu-AI is a Node.js web app you run locally. You should have Node.js
+    already if you followed the
+    <a href="../tutorials/claude-code-rstudio.html#section-node">Node.js
+    install section of the RStudio tutorial</a>; if not, install it now.</p>
+
+  <pre><code>git clone https://github.com/sullichrosu/Njobvu-AI.git
+cd Njobvu-AI
+npm install
+npm install --save sqlite3   # storage backend
+
+# Start the server
+npm start
+# Open http://localhost:8080 in your browser</code></pre>
+
+  <p>On Windows, the repo also includes <code>InstallMe.exe</code> which
+    installs Node.js for you and creates a desktop shortcut &mdash; use that
+    if you're on a teaching computer where you can't run <code>npm</code>.</p>
+
+  <p>On the login page, click <strong>Signup</strong>, create a local account,
+    log in.</p>
+
+  <h3>Tasks (Part 2)</h3>
+  <ol>
+    <li><strong>Create a project and import data (2 pts).</strong> Create a
+      new project. Import 20&ndash;30 images from
+      <code>data_sample/cameratraps/</code>. Define 4 classes:
+      <code>deer</code>, <code>elk</code>, <code>bear</code>,
+      <code>bobcat</code> (matching Lab 4).</li>
+    <li><strong>Label a few (4 pts).</strong> Draw bounding boxes on at least
+      15 images. Use the keyboard shortcuts the README documents (much faster
+      than the mouse). For an empty image, mark it as "reviewed, no animal"
+      rather than drawing no box &mdash; an important distinction.</li>
+    <li><strong>Train a tiny model (2 pts).</strong> Upload one of the YOLO
+      training scripts Njobvu-AI ships with (or adapt
+      <a href="../code/cameratraps/train_oregon_critters.py">our Lab 4
+      script</a>). Run training for 1&ndash;2 epochs as a smoke test. You
+      don't need a usable model &mdash; you need to see the training-status
+      log update in the GUI.</li>
+    <li><strong>Validate (2 pts).</strong> Switch to validation mode. Step
+      through 5 of your labels and either confirm or correct them. Note how
+      the UX compares to running <code>yolo predict</code> on the
+      command line.</li>
+  </ol>
+
+  <h3>Deliverable (Part 2)</h3>
+  <p>A 1&ndash;2 minute screen recording showing the labeling, training-run
+    start, and validation step.</p>
+
+  <h2>Reflection (1-page PDF, both parts)</h2>
+  <p>In ~300 words, answer:</p>
+  <ol>
+    <li>For your own future projects, where would the GUI be a better choice
+      than the CLI? Where is the CLI clearly better? Be specific (e.g., "for
+      undergrad labeling sprints across 3 sites, Njobvu-AI's multi-user mode
+      wins; for nightly batch processing of 100k images on a remote server,
+      <code>yolo predict</code> on the CLI wins").</li>
+    <li>What did the GUI surface that the CLI hid? (Often: how slow review
+      really is. Sometimes: that your label classes are ambiguous.)</li>
+    <li>What did the CLI surface that the GUI hid? (Often: reproducibility.
+      Sometimes: which exact model version was used.)</li>
+  </ol>
+
+  <h2>Rubric</h2>
+  <table>
+    <tr><th>Component</th><th>Points</th></tr>
+    <tr><td>Part 1 &mdash; Shiny PNW-Cnet (install &amp; 3 tasks)</td><td>10</td></tr>
+    <tr><td>Part 2 &mdash; Njobvu-AI (install &amp; 4 tasks)</td><td>8</td></tr>
+    <tr><td>Reflection</td><td>2</td></tr>
+    <tr><th>Total</th><th>20</th></tr>
+  </table>
+
+  <h2>If something doesn't work</h2>
+  <ul>
+    <li>Shiny PNW-Cnet failing on Python detection: see Zack's
+      <a href="https://github.com/zjruff/Shiny_PNW-Cnet#installation">install
+      README</a>. Pure-R installs work too if Python is uncooperative; you'll
+      lose some inference features but the review UI works.</li>
+    <li>Njobvu-AI on macOS asking for Xcode tools when running
+      <code>npm install --save sqlite3</code>: just say yes and re-run.</li>
+    <li>Either app failing because of a port conflict: pick another port
+      (Shiny: <code>shiny::runApp(".", port = 4321)</code>; Njobvu-AI: set
+      <code>PORT=8888 npm start</code>).</li>
+    <li>For both: paste the error into a Claude Code session running in the
+      cloned repo's folder and let Claude help triage. You will be a much
+      faster debugger of a GUI tool with Claude reading the install scripts
+      alongside you.</li>
+  </ul>
+
+  <p>This lab also doubles as a sanity check for your <strong>final
+    project</strong>: if your project will involve labeling new images or
+    reviewing acoustic detections, one of these tools is almost certainly the
+    right answer for that step.</p>
+
+  <footer>Lab 11 &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

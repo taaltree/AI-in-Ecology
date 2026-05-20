@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Git &amp; GitHub for Ecologists · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="python-intro.html">Python Crash Course</a>
+    <a href="environments.html">Python Environments &amp; Conda</a>
+    <a href="pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="github-intro.html" class="current">Git &amp; GitHub for Ecologists</a>
+    <a href="claude-code.html">Claude Code Setup</a>
+    <a href="claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="../labs/lab1.html">Lab 1 · Python</a>
+    <a href="../labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="../labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="../labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="../labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="../labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="../labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="../labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="../labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="../labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="../labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Git &amp; GitHub for Ecologists</h1>
+  <p class="lead">Almost every model and pipeline you'll touch in this course lives on GitHub.
+    This tutorial walks you, slowly, from "I've never used git" to "I can clone a repo, contribute
+    a fix, and keep my own work versioned."</p>
+
+  <h2>1. Two things that are easy to confuse</h2>
+  <table>
+    <tr><th>Name</th><th>What it is</th></tr>
+    <tr><td><strong>Git</strong></td><td>A program that runs on <em>your</em> computer. It tracks
+        changes to files in a folder so you can see history, undo mistakes, and collaborate.</td></tr>
+    <tr><td><strong>GitHub</strong></td><td>A website (owned by Microsoft) where people host their
+        git repositories so others can find them, download them, and contribute. There are
+        alternatives (GitLab, Bitbucket, Codeberg); GitHub is by far the most common in
+        ecology / ML.</td></tr>
+  </table>
+  <p>You can use git without GitHub (local version control). You generally cannot use GitHub
+    without git (or one of its GUI front-ends).</p>
+
+  <h2>2. Install git and make a GitHub account</h2>
+
+  <h3>macOS</h3>
+  <pre><code># git ships with Xcode command-line tools; trigger the install:
+xcode-select --install
+
+# Or via Homebrew (gets the newest version):
+brew install git
+
+git --version
+# git version 2.45.x</code></pre>
+
+  <h3>Windows</h3>
+  <pre><code># PowerShell:
+winget install Git.Git
+
+# Restart your terminal, then:
+git --version</code></pre>
+  <p>On Windows, the installer also gives you <strong>Git Bash</strong>, a UNIX-style terminal that
+    works the same way as macOS/Linux terminals. We recommend using Git Bash (or Windows Terminal
+    with PowerShell, but Git Bash is friendlier for following along with tutorials).</p>
+
+  <h3>Make a GitHub account</h3>
+  <p>Go to <a href="https://github.com/signup">github.com/signup</a>. Use your university email
+    so you can later claim a free <a href="https://education.github.com/">GitHub Student
+    Developer Pack</a> (it's worth it &mdash; free private repos and free CI minutes).</p>
+
+  <h3>Tell git who you are (one time, per machine)</h3>
+  <pre><code>git config --global user.name  "Your Name"
+git config --global user.email "you@university.edu"
+git config --global init.defaultBranch main</code></pre>
+
+  <h2>3. The two-minute mental model</h2>
+  <p>A git <strong>repository</strong> ("repo") is a folder on your computer with a hidden
+    <code>.git/</code> subfolder where git stores history. Three states a file can be in:</p>
+  <ol>
+    <li><strong>Working directory</strong> &mdash; your files as you see them in Finder/Explorer.</li>
+    <li><strong>Staging area</strong> &mdash; files you've told git "I want these in my next
+      snapshot". Add with <code>git add</code>.</li>
+    <li><strong>Committed</strong> &mdash; permanent snapshot stored in <code>.git/</code> with
+      a message. Save with <code>git commit -m "..."</code>.</li>
+  </ol>
+  <p>A snapshot of all three states &mdash; what's changed, what's staged, what's already
+    committed &mdash; is shown by <code>git status</code>. You will run <code>git status</code>
+    constantly. It's the most useful git command.</p>
+
+  <h2>4. Your first repo (10 minutes, all local)</h2>
+  <pre><code># Make a folder and turn it into a git repo
+mkdir my_first_repo
+cd my_first_repo
+git init
+
+# Create a file
+echo "# My notes" &gt; README.md
+git status
+#   On branch main
+#   No commits yet
+#   Untracked files: README.md
+
+# Stage and commit
+git add README.md
+git commit -m "initial commit: add README"
+
+# Make a change
+echo "Day 1: installed Python." &gt;&gt; README.md
+git status      # shows README.md as "modified"
+git diff        # shows the actual line that changed
+git add README.md
+git commit -m "log day 1"
+
+# See your history
+git log --oneline</code></pre>
+
+  <div class="callout tip">
+    <strong>What just happened?</strong> You took two snapshots of your folder. You can come
+    back to either of them with <code>git checkout</code>, or undo the most recent change with
+    <code>git restore</code>. Git is now your safety net.
+  </div>
+
+  <h2>5. Cloning someone else's repo</h2>
+  <p>Almost everything you do in this course starts by <strong>cloning</strong> a public repo from
+    GitHub. To clone Zach Ruff's PNW-Cnet Python package:</p>
+
+  <pre><code>cd ~/research                                            # wherever you keep code
+git clone https://github.com/zjruff/pycnet-audio.git
+cd pycnet-audio
+ls</code></pre>
+
+  <p>You now have an exact copy of the repo's <code>main</code> branch on your laptop, including
+    its full history. To pull in any new commits the author has made since you cloned:</p>
+  <pre><code>git pull</code></pre>
+
+  <h2>6. Reading a GitHub repo well (don't skip this)</h2>
+  <p>Before you run anyone's code, spend five minutes scanning the repo. Look at, in this order:</p>
+  <ol>
+    <li><strong>README.md</strong> &mdash; what is this, who is it for, how do I install and run it.</li>
+    <li><strong>LICENSE</strong> &mdash; can I use this in my work? MIT/Apache/BSD = yes,
+      GPL = yes with conditions, no LICENSE file = legally ambiguous, be careful.</li>
+    <li><strong>The Issues tab</strong> &mdash; what's broken, what's coming, has anyone hit the
+      bug you're about to hit?</li>
+    <li><strong>The "About" sidebar and recent commits</strong> &mdash; is this actively
+      maintained? A repo last touched in 2019 may still be great, but you should know.</li>
+    <li><strong>requirements.txt / environment.yml / pyproject.toml</strong> &mdash; what versions
+      of what packages does it need? Mismatched versions are the #1 cause of "it doesn't work for
+      me".</li>
+  </ol>
+
+  <h2>7. Your second repo &mdash; pushing to GitHub</h2>
+  <p>Now make your own repo on GitHub for your course work.</p>
+
+  <h3>Create the empty repo on GitHub</h3>
+  <ol>
+    <li>Go to <a href="https://github.com/new">github.com/new</a>.</li>
+    <li>Name: <code>aiecol-coursework</code>.</li>
+    <li>Visibility: <strong>Private</strong> (you can flip to public later).</li>
+    <li>Do NOT check "initialize with README" &mdash; you already have one locally.</li>
+    <li>Click <strong>Create repository</strong>.</li>
+  </ol>
+
+  <h3>Link your local repo to GitHub and push</h3>
+  <p>GitHub will show you the exact commands. They look like:</p>
+  <pre><code>cd my_first_repo
+git remote add origin https://github.com/yourname/aiecol-coursework.git
+git branch -M main
+git push -u origin main</code></pre>
+
+  <p>The first <code>git push</code> will prompt you for authentication. GitHub <em>does not</em>
+    accept your password from the command line anymore. You have two good options:</p>
+
+  <h3>Auth option A &mdash; GitHub CLI (easiest)</h3>
+  <pre><code>brew install gh                  # macOS
+winget install GitHub.cli        # Windows
+gh auth login
+# Pick HTTPS, then "Login with a web browser", paste the one-time code.</code></pre>
+  <p>After this, <code>git push</code> "just works" forever on this machine.</p>
+
+  <h3>Auth option B &mdash; SSH key</h3>
+  <pre><code>ssh-keygen -t ed25519 -C "you@university.edu"
+# Press Enter for default location; set a passphrase if you want.
+
+# Print the PUBLIC key (the .pub file):
+cat ~/.ssh/id_ed25519.pub
+# Copy the line that prints.</code></pre>
+  <p>On GitHub: <strong>Settings &rarr; SSH and GPG keys &rarr; New SSH key</strong>, paste, save.</p>
+  <p>Then change your remote URL to the SSH form:</p>
+  <pre><code>git remote set-url origin git@github.com:yourname/aiecol-coursework.git
+git push</code></pre>
+
+  <h2>8. The everyday loop</h2>
+  <p>Once your repo is on GitHub, this is what each working session looks like:</p>
+  <pre><code>cd aiecol-coursework
+git pull                      # grab anything you pushed from another machine
+
+# ... do work ...
+
+git status                    # see what changed
+git diff                      # see the actual lines that changed
+git add lab3/detect.py        # stage the files you want to commit
+git commit -m "lab 3: lower MD threshold to 0.2 and rerun"
+
+git push                      # send your commits to GitHub</code></pre>
+
+  <div class="callout note">
+    <strong>Commit messages.</strong> Write them like you're emailing your future self at 3 AM
+    six months from now. "fix" is useless; "fix EXIF parser to handle missing
+    DateTimeOriginal" is gold.
+  </div>
+
+  <h2>9. Branches (when you want to try something without breaking what works)</h2>
+  <pre><code># Start a new branch off of main
+git checkout -b try-yolov8m
+
+# ...edit, train, evaluate...
+git add -A
+git commit -m "try yolov8m, larger model"
+
+# It didn't help. Throw it away:
+git checkout main
+git branch -D try-yolov8m
+
+# Or it helped. Bring it into main:
+git checkout main
+git merge try-yolov8m
+git push</code></pre>
+
+  <h2>10. Forking and pull requests &mdash; how you contribute to someone else's repo</h2>
+  <p>You found a typo in the <code>pycnet-audio</code> README. Here's how to fix it.</p>
+  <ol>
+    <li>On GitHub, go to <a href="https://github.com/zjruff/pycnet-audio">github.com/zjruff/pycnet-audio</a>.
+      Click <strong>Fork</strong> (top right). You now have your own copy under <em>your</em>
+      account.</li>
+    <li>Clone <em>your</em> fork:
+      <pre><code>git clone https://github.com/yourname/pycnet-audio.git
+cd pycnet-audio</code></pre></li>
+    <li>Make a branch, edit, commit, push:
+      <pre><code>git checkout -b fix-readme-typo
+# edit README.md
+git add README.md
+git commit -m "docs: fix typo in install instructions"
+git push -u origin fix-readme-typo</code></pre></li>
+    <li>On GitHub your fork now has a banner saying "fix-readme-typo had recent pushes &mdash;
+      Compare &amp; pull request". Click it. Write a one-paragraph description. Submit.</li>
+    <li>The maintainer reviews. If they merge, your fix is in the canonical repo. If they ask
+      for changes, push more commits to the same branch and they'll appear in the PR.</li>
+  </ol>
+
+  <p>This is how almost every open-source ecology tool gets improved.</p>
+
+  <h2>11. A <code>.gitignore</code> for ecology / ML projects</h2>
+  <p>You do <em>not</em> want to push 8 GB of camera-trap images, model weights, or your
+    Anthropic API key to GitHub. Create a file called <code>.gitignore</code> at the root of your
+    repo before your first push:</p>
+  <pre><code># Data &mdash; never put raw datasets in git
+data/
+*.JPG
+*.jpg
+*.wav
+*.mp3
+*.npy
+*.pt
+*.h5
+*.onnx
+runs/
+
+# Python build / cache
+__pycache__/
+*.pyc
+.venv/
+env/
+
+# Notebooks: keep clean by stripping outputs before commit (see nbstripout)
+.ipynb_checkpoints/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.key
+.claude/credentials.json</code></pre>
+
+  <h2>12. When git scares you</h2>
+  <p>Git has a famously bad CLI for a few specific situations. Some quick rescue commands:</p>
+  <table>
+    <tr><th>"I want to..."</th><th>Command</th></tr>
+    <tr><td>Undo a change to a file I haven't committed yet</td>
+        <td><code>git restore path/to/file</code></td></tr>
+    <tr><td>Unstage a file I accidentally <code>git add</code>ed</td>
+        <td><code>git restore --staged path/to/file</code></td></tr>
+    <tr><td>Throw away ALL uncommitted changes (irreversible)</td>
+        <td><code>git reset --hard HEAD</code></td></tr>
+    <tr><td>Undo my last commit but keep the changes in the working tree</td>
+        <td><code>git reset --soft HEAD~1</code></td></tr>
+    <tr><td>See what changed between now and 5 commits ago</td>
+        <td><code>git diff HEAD~5</code></td></tr>
+    <tr><td>I committed something secret &mdash; help!</td>
+        <td>Stop. Don't push. Ask the instructor; rewriting history is doable but you should
+        not learn it by panicking at 11 PM.</td></tr>
+  </table>
+
+  <p>When in doubt: <code>git status</code> first, then ask Claude Code to explain what it sees
+    (paste the output verbatim). Claude is excellent at git triage.</p>
+
+  <h2>13. Where to go next</h2>
+  <ul>
+    <li><a href="https://github.git-scm.com/book/en/v2">Pro Git</a> &mdash; free book, the
+      authoritative reference.</li>
+    <li><a href="https://lab.github.com/">GitHub Learning Lab</a> &mdash; interactive tutorials.</li>
+    <li><a href="https://education.github.com/pack">GitHub Student Developer Pack</a> &mdash;
+      free pro features and partner credits while you're a student.</li>
+    <li>This course's <a href="claude-code.html#section-git">Claude Code + GitHub workflow
+      section</a> &mdash; how to drive all of this from Claude Code instead of the bare CLI.</li>
+  </ul>
+
+  <footer>Git &amp; GitHub for Ecologists &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

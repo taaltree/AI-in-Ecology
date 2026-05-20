@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab 7 · PNW-Cnet &amp; Custom CNN · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="../tutorials/python-intro.html">Python Crash Course</a>
+    <a href="../tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="../tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="../tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="../tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="../tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="../tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="../tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="../tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="lab1.html">Lab 1 · Python</a>
+    <a href="lab2.html">Lab 2 · PyTorch</a>
+    <a href="lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="lab5.html">Lab 5 · Species Classifier</a>
+    <a href="lab6.html">Lab 6 · BirdNET</a>
+    <a href="lab7.html" class="current">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Lab 7 &middot; PNW-Cnet + Train a Custom Spectrogram CNN</h1>
+
+  <div class="lab-meta">
+    <strong>Worth:</strong> 20 points &nbsp;|&nbsp;
+    <strong>Due:</strong> end of Day 4 (morning) &nbsp;|&nbsp;
+    <strong>Files to submit:</strong> <code>pnwcnet_detections.csv</code>,
+    <code>custom_cnn.pt</code>, <code>training_curves.png</code>, <code>val_confusion.png</code>,
+    and a 1-page PDF.<br>
+    <strong>Pre-reading:</strong>
+    <a href="../tutorials/bioacoustics.html">Bioacoustics tutorial</a>, PNW-Cnet and custom CNN
+    sections.
+  </div>
+
+  <h2>Biological motivation</h2>
+  <p>You are monitoring an old-growth forest where the species of management interest is the
+    <strong>barred owl pair duet</strong> &mdash; a distinctive antiphonal call between a male and
+    a female. PNW-Cnet has a "barred owl" class but it's trained on single-bird calls and treats
+    duets the same as solo calls. You need a classifier that specifically detects the duet to
+    estimate pair occupancy.</p>
+
+  <h2>Data</h2>
+  <div class="callout tip"><strong>Get the data:</strong> <a href="../downloads/aiecol_audio.zip">aiecol_audio.zip (98 MB)</a> &mdash; or the full bundle <a href="../downloads/aiecol_data_sample.zip">aiecol_data_sample.zip (395 MB)</a>. See the <a href="../downloads/index.html">downloads page</a> for layout.</div>
+  <p>You'll use two pieces:</p>
+  <ul>
+    <li><code>data_sample/audio/</code> &mdash; the 97-clip iNaturalist sample
+      shipped with the course (~5&ndash;30 s each), indexed in
+      <code>data_sample/audio_index.csv</code> by ground-truth species. We'll
+      treat this as a "stand-in soundscape" for the inference task. (A real
+      deployment would have 4&ndash;8 h of continuous ARU recordings; for
+      Lab&nbsp;7's smoke test the per-recording snippets are enough.)</li>
+    <li><strong>Custom-CNN training set:</strong> the 97 iNat clips (10 per species, except 9 varied thrush and 8 robin) above,
+      grouped into three biologically distinct super-classes that a small CNN
+      can plausibly learn:
+      <ul>
+        <li><code>owl</code>: barred owl + northern spotted owl (20 clips)</li>
+        <li><code>songbird</code>: thrushes, wren, junco, robin (60 clips)</li>
+        <li><code>other</code>: pileated woodpecker, olive-sided flycatcher (20)</li>
+      </ul>
+      In place of the "barred-owl pair duet vs solo" target described above,
+      the deliverable for this lab uses this 3-super-class formulation (no
+      hand-labeling required). If you want to do the duet/solo task instead,
+      ask the instructor for the additional hand-labeled clips.</li>
+  </ul>
+
+  <h2>Tasks</h2>
+
+  <h3>Task 1 &mdash; PNW-Cnet inference via <code>pycnet-audio</code> (4 pts)</h3>
+  <p>Install <code>pycnet-audio</code> in its own conda env (see the
+    <a href="../tutorials/bioacoustics.html#section-3">bioacoustics tutorial</a>):</p>
+  <pre><code>conda create -n pycnet -c conda-forge sox python=3.11 -y
+conda activate pycnet
+pip install pycnet-audio</code></pre>
+
+  <p>Then run the end-to-end pipeline on the soundscape directory using PNW-Cnet v5:</p>
+  <pre><code>pycnet process /path/to/soundscapes -c v5 -w 4 -a</code></pre>
+
+  <p>This generates 12-second non-overlapping spectrograms, scores them, and writes:</p>
+  <ul>
+    <li><code>soundscapes_v5_class_scores.csv</code> &mdash; one row per 12-s segment,
+      <code>Filename</code> + 135 class-score columns.</li>
+    <li><code>soundscapes_v5_detection_summary.csv</code> &mdash; aggregated counts by date /
+      threshold.</li>
+    <li><code>soundscapes_review_kscope.csv</code> &mdash; review file for Kaleidoscope-format
+      human verification.</li>
+  </ul>
+
+  <p>Convert the class-scores CSV to long form (one row per above-threshold detection) and save
+    as <code>pnwcnet_detections.csv</code>. Report the top 5 detected classes by frequency and
+    note which (if any) are barred owl variants (e.g., <code>STVA_8Note</code>,
+    <code>STVA_Duet</code>).</p>
+
+  <h3>Task 2 &mdash; train custom 3-class CNN (8 pts)</h3>
+  <p>Use <a href="../code/bioacoustics/train_spec_cnn.py">train_spec_cnn.py</a> (from the
+    bioacoustics tutorial) as a starting point, adapting for 3 classes (duet, solo_barred,
+    background). Run for at least 10 epochs. Save:</p>
+  <ul>
+    <li><code>training_curves.png</code> (train + val loss, train + val accuracy).</li>
+    <li><code>val_confusion.png</code>.</li>
+    <li><code>custom_cnn.pt</code> (best validation epoch).</li>
+  </ul>
+
+  <h3>Task 3 &mdash; compare custom CNN to PNW-Cnet on the duet question (4 pts)</h3>
+  <p>For each 5-second window in the soundscape:</p>
+  <ul>
+    <li>Get PNW-Cnet's barred-owl score for the overlapping segment.</li>
+    <li>Get your custom CNN's <em>duet</em> score for the same window.</li>
+  </ul>
+  <p>Plot a scatter of the two scores. Comment on how well PNW-Cnet's general "barred owl" score
+    serves as a proxy for the more specific "duet" event you actually care about.</p>
+
+  <h3>Task 4 &mdash; interpretation (4 pts)</h3>
+  <p>In 200 words: when does the off-the-shelf model suffice, and when do you need to train your
+    own? What does your custom CNN's failure mode look like (listen to a few false positives) and
+    how would you improve it?</p>
+
+  <h2>Go-further</h2>
+  <p>Augment the duet class by temporally jittering and pitch-shifting clips (&plusmn; 1 semitone)
+    and re-train. Did augmentation help?</p>
+
+  <h2>Rubric</h2>
+  <table>
+    <tr><th>Component</th><th>Points</th></tr>
+    <tr><td>PNW-Cnet runs and outputs are summarised</td><td>4</td></tr>
+    <tr><td>Custom CNN trains with all required outputs</td><td>8</td></tr>
+    <tr><td>Cross-model comparison and scatter</td><td>4</td></tr>
+    <tr><td>Interpretation</td><td>4</td></tr>
+    <tr><th>Total</th><th>20</th></tr>
+  </table>
+
+  <footer>Lab 7 &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

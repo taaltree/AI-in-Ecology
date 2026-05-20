@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PyTorch Tutorial · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="python-intro.html">Python Crash Course</a>
+    <a href="environments.html">Python Environments &amp; Conda</a>
+    <a href="pytorch-intro.html" class="current">PyTorch Tutorial</a>
+    <a href="yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="claude-code.html">Claude Code Setup</a>
+    <a href="claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="../labs/lab1.html">Lab 1 · Python</a>
+    <a href="../labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="../labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="../labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="../labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="../labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="../labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="../labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="../labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="../labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="../labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>PyTorch Tutorial</h1>
+  <p class="lead">A working mental model of how deep learning libraries actually work, followed by a
+    complete training loop you can copy and adapt.</p>
+
+  <h2>1. The mental model</h2>
+  <p>A neural network is just a function that maps an input tensor to an output tensor. Training is
+    the process of finding the parameters of that function so that, on average, the output is close
+    to the truth.</p>
+
+  <p>Every deep learning library &mdash; PyTorch, TensorFlow, JAX &mdash; has four pieces:</p>
+  <ol>
+    <li><strong>Tensors</strong> &mdash; n-dimensional arrays that live on a CPU or GPU.</li>
+    <li><strong>Autograd</strong> &mdash; bookkeeping that lets the library compute the gradient of
+      <em>any</em> scalar with respect to <em>any</em> tensor that touched it.</li>
+    <li><strong>Modules (models)</strong> &mdash; reusable bundles of tensors and operations
+      (convolutions, ReLUs, attention, ...). A model is itself a Module.</li>
+    <li><strong>Optimizers</strong> &mdash; rules for updating tensors using their gradients (SGD,
+      Adam, AdamW).</li>
+  </ol>
+
+  <h2>2. Tensors</h2>
+  <pre><code>import torch
+
+# Create a tensor from a Python list
+x = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
+print(x.shape)        # torch.Size([2, 2])
+print(x.dtype)        # torch.float32
+
+# Move it to GPU if you have one
+device = (
+    "cuda" if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available()  # Apple Silicon
+    else "cpu"
+)
+x = x.to(device)
+
+# An image batch has shape (N, C, H, W):
+#   N = batch size, C = channels (3 for RGB), H/W = pixels
+batch = torch.randn(8, 3, 224, 224, device=device)</code></pre>
+
+  <h2>3. Autograd in one example</h2>
+  <pre><code>w = torch.tensor(2.0, requires_grad=True)   # a parameter we want to optimize
+x = torch.tensor(3.0)
+y_true = torch.tensor(10.0)
+
+y_pred = w * x          # forward pass
+loss = (y_pred - y_true) ** 2   # squared error
+loss.backward()         # PyTorch fills in w.grad
+print(w.grad)           # d(loss)/d(w) = 2 * (w*x - y_true) * x = -24
+
+# A single SGD step: nudge w in the direction that reduces loss.
+with torch.no_grad():
+    w -= 0.01 * w.grad
+    w.grad.zero_()</code></pre>
+  <p>That's the entire idea. A real training loop just does this billions of times with a much
+    bigger <code>w</code> (millions of weights) and many examples in a batch.</p>
+
+  <h2>4. Datasets and DataLoaders</h2>
+  <p>A <code>Dataset</code> tells PyTorch how to get one example. A <code>DataLoader</code> wraps a
+    Dataset to give you batches, in parallel, with shuffling.</p>
+
+  <pre><code>from torch.utils.data import Dataset, DataLoader
+from PIL import Image
+from torchvision import transforms
+from pathlib import Path
+
+class CameraTrapDataset(Dataset):
+    """One example = one image + its label.
+
+    `root/day/*.JPG` are day images (label 0); `root/night/*.JPG` are night (label 1).
+    """
+    def __init__(self, root, transform):
+        self.items = []
+        for label, sub in enumerate(["day", "night"]):
+            for p in (Path(root) / sub).glob("*.JPG"):
+                self.items.append((p, label))
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, idx):
+        path, label = self.items[idx]
+        img = Image.open(path).convert("RGB")
+        img = self.transform(img)     # convert to tensor, resize, normalize
+        return img, label
+
+# Standard ImageNet preprocessing
+tx = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                         std=[0.229, 0.224, 0.225]),
+])
+
+train_ds = CameraTrapDataset("data/train", transform=tx)
+val_ds   = CameraTrapDataset("data/val",   transform=tx)
+
+train_dl = DataLoader(train_ds, batch_size=32, shuffle=True,  num_workers=4)
+val_dl   = DataLoader(val_ds,   batch_size=32, shuffle=False, num_workers=4)</code></pre>
+
+  <h2>5. A model</h2>
+  <p>For everything in this course you'll start from a model that someone else trained on
+    ImageNet, then <em>fine-tune</em> the last layer. That gets you 90% of the way for a few
+    percent of the compute.</p>
+
+  <pre><code>import torch.nn as nn
+from torchvision import models
+
+# Load a ResNet-18 with ImageNet weights
+model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
+
+# Replace the final 1000-class classifier with a 2-class one (day vs night)
+model.fc = nn.Linear(model.fc.in_features, 2)
+model = model.to(device)</code></pre>
+
+  <h2>6. The training loop</h2>
+  <p>Every PyTorch training script in existence looks like this. Learn this loop and you can read
+    almost any training code.</p>
+
+  <pre><code>import torch.optim as optim
+
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.AdamW(model.parameters(), lr=1e-4)
+
+def run_one_epoch(loader, train):
+    model.train(train)
+    total, correct, loss_sum = 0, 0, 0.0
+    for imgs, labels in loader:
+        imgs   = imgs.to(device)
+        labels = labels.to(device)
+
+        with torch.set_grad_enabled(train):
+            logits = model(imgs)                # forward
+            loss   = criterion(logits, labels)  # how wrong were we?
+
+            if train:
+                optimizer.zero_grad()           # clear old gradients
+                loss.backward()                 # compute new gradients
+                optimizer.step()                # update the weights
+
+        preds = logits.argmax(dim=1)
+        correct += (preds == labels).sum().item()
+        total   += labels.size(0)
+        loss_sum += loss.item() * labels.size(0)
+    return loss_sum / total, correct / total
+
+n_epochs = 5
+for epoch in range(n_epochs):
+    train_loss, train_acc = run_one_epoch(train_dl, train=True)
+    val_loss,   val_acc   = run_one_epoch(val_dl,   train=False)
+    print(f"epoch {epoch+1}: "
+          f"train_loss={train_loss:.3f} train_acc={train_acc:.3f}  "
+          f"val_loss={val_loss:.3f}  val_acc={val_acc:.3f}")</code></pre>
+
+  <div class="callout note">
+    <strong>Why <code>optimizer.zero_grad()</code>?</strong> PyTorch <em>accumulates</em> gradients
+    by default. If you don't zero them between steps, each step would use a running sum of all
+    previous gradients and training would explode. This trips up everyone.
+  </div>
+
+  <h2>7. Saving and loading</h2>
+  <pre><code># Save only the weights (the recommended pattern)
+torch.save(model.state_dict(), "day_vs_night_resnet18.pt")
+
+# Loading later, in a fresh script
+model = models.resnet18()
+model.fc = nn.Linear(model.fc.in_features, 2)
+model.load_state_dict(torch.load("day_vs_night_resnet18.pt", map_location=device))
+model.eval()</code></pre>
+
+  <h2>8. Inference on a single image</h2>
+  <pre><code>img = Image.open("IMG_0042.JPG").convert("RGB")
+x = tx(img).unsqueeze(0).to(device)   # add the batch dimension
+
+with torch.no_grad():
+    logits = model(x)
+    probs  = logits.softmax(dim=1)[0].cpu().numpy()
+
+print({"day": probs[0], "night": probs[1]})</code></pre>
+
+  <h2>9. Things that will trip you up</h2>
+  <table>
+    <tr><th>Symptom</th><th>Likely cause</th></tr>
+    <tr><td>Training accuracy increases but val accuracy doesn't</td>
+        <td>Overfitting. Add augmentation, drop the learning rate, or train fewer epochs.</td></tr>
+    <tr><td>Loss is NaN after a few steps</td>
+        <td>Learning rate is too high, or your input has un-normalized pixel values (0&ndash;255 instead
+        of 0&ndash;1).</td></tr>
+    <tr><td>Validation accuracy &asymp; 50% on a 2-class problem</td>
+        <td>You forgot to call <code>model.eval()</code>, or your dataset has shuffled labels.</td></tr>
+    <tr><td>Training is incredibly slow</td>
+        <td>You're on CPU. Confirm by printing <code>next(model.parameters()).device</code>.</td></tr>
+  </table>
+
+  <p><a href="../labs/lab2.html">→ Continue to Lab 2: Train day-vs-night on Oregon Critters</a></p>
+
+  <footer>PyTorch tutorial &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

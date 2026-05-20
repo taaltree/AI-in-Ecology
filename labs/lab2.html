@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab 2 · PyTorch Tutorial · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="../tutorials/python-intro.html">Python Crash Course</a>
+    <a href="../tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="../tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="../tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="../tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="../tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="../tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="../tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="../tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="lab1.html">Lab 1 · Python</a>
+    <a href="lab2.html" class="current">Lab 2 · PyTorch</a>
+    <a href="lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="lab5.html">Lab 5 · Species Classifier</a>
+    <a href="lab6.html">Lab 6 · BirdNET</a>
+    <a href="lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Lab 2 &middot; PyTorch: Train a Day-vs-Night Classifier</h1>
+
+  <div class="lab-meta">
+    <strong>Worth:</strong> 20 points &nbsp;|&nbsp;
+    <strong>Due:</strong> end of Day 1 &nbsp;|&nbsp;
+    <strong>Files to submit:</strong> <code>lab2_train.py</code> (modified), the saved weights
+    <code>day_night.pt</code>, and a 1-page PDF with loss/accuracy curves and a confusion matrix.<br>
+    <strong>Pre-reading:</strong> <a href="../tutorials/pytorch-intro.html">PyTorch Tutorial</a>.
+  </div>
+
+  <h2>Biological motivation</h2>
+  <p>Many camera-trap analyses condition on diel period. A simple but useful first model is a
+    day-vs-night binary classifier on the image itself (no EXIF needed). It also lets us validate
+    your software environment end-to-end before tackling species identification on Day 2.</p>
+
+  <h2>Data</h2>
+  <div class="callout tip"><strong>Get the data:</strong> <a href="../downloads/aiecol_cameratraps.zip">aiecol_cameratraps.zip (297 MB)</a> &mdash; or the full bundle <a href="../downloads/aiecol_data_sample.zip">aiecol_data_sample.zip (395 MB)</a>. See the <a href="../downloads/index.html">downloads page</a> for layout.</div>
+  <p>You will be given a curated <code>day_night/</code> folder built from the Oregon Critters
+    sample:</p>
+  <pre><code>day_night/
+├── train/
+│   ├── day/    (800 images)
+│   └── night/  (800 images)
+└── val/
+    ├── day/    (200 images)
+    └── night/  (200 images)</code></pre>
+
+  <p>Day/night labels were derived from EXIF timestamps and sunrise/sunset at site location, then
+    hand-verified.</p>
+
+  <h2>Tasks</h2>
+
+  <h3>Task 1 &mdash; run the starter (4 pts)</h3>
+  <p>Run <a href="../code/cameratraps/lab2_train.py">lab2_train.py</a> unmodified. Confirm that:</p>
+  <ul>
+    <li>It uses your GPU/MPS if available (it prints the device).</li>
+    <li>It trains for 5 epochs without crashing.</li>
+    <li>It produces <code>day_night.pt</code> and <code>training_curves.png</code>.</li>
+  </ul>
+
+  <h3>Task 2 &mdash; train longer with augmentation (5 pts)</h3>
+  <p>Edit the script to:</p>
+  <ul>
+    <li>Train for 10 epochs.</li>
+    <li>Add random horizontal flips and a mild color jitter to the train transform.</li>
+    <li>Save the model with the <em>best validation accuracy</em>, not the last epoch.</li>
+  </ul>
+
+  <h3>Task 3 &mdash; evaluate (5 pts)</h3>
+  <p>Compute and save a confusion matrix on the validation set
+    (<code>fig_confusion.png</code>). Also report:</p>
+  <ul>
+    <li>Validation accuracy.</li>
+    <li>Per-class precision and recall.</li>
+    <li>The 5 most confidently <em>wrong</em> predictions, with thumbnails and predicted scores.</li>
+  </ul>
+
+  <h3>Task 4 &mdash; interpretation (4 pts)</h3>
+  <p>In 150 words: when do the model's mistakes happen? Heavy snow at midday? Bright IR
+    illuminator at night? What features is your model probably using? Does the data leak any
+    cues you didn't intend (e.g., a sticker on the lens visible only at night)?</p>
+
+  <h2>Go-further (2 pts within the rubric)</h2>
+  <p>Re-train using <strong>only the bottom 20% of each image</strong> (cropped at load time).
+    How much does accuracy drop? Why?</p>
+
+  <h2>Rubric</h2>
+  <table>
+    <tr><th>Component</th><th>Points</th></tr>
+    <tr><td>Code modifications run cleanly and produce required outputs</td><td>10</td></tr>
+    <tr><td>Written interpretation including a hypothesis about failure modes</td><td>6</td></tr>
+    <tr><td>Go-further (crop ablation) with written reasoning</td><td>4</td></tr>
+    <tr><th>Total</th><th>20</th></tr>
+  </table>
+
+  <p><strong>Starter:</strong> <a href="../code/cameratraps/lab2_train.py">lab2_train.py</a></p>
+
+  <footer>Lab 2 &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

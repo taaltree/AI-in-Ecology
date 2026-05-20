@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bioacoustics Toolkit · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="python-intro.html">Python Crash Course</a>
+    <a href="environments.html">Python Environments &amp; Conda</a>
+    <a href="pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="bioacoustics.html" class="current">Bioacoustics Toolkit</a>
+    <a href="github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="claude-code.html">Claude Code Setup</a>
+    <a href="claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="../labs/lab1.html">Lab 1 · Python</a>
+    <a href="../labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="../labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="../labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="../labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="../labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="../labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="../labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="../labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="../labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="../labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Bioacoustics Toolkit</h1>
+  <p class="lead">Spectrograms, BirdNET, PNW-Cnet, and how to train a small spectrogram classifier
+    of your own.</p>
+
+  <h2>1. From sound to spectrogram</h2>
+  <p>Almost every modern acoustic classifier (BirdNET, PNW-Cnet, Perch, BirdNET-Analyzer) treats
+    audio as an image. The image is a <strong>spectrogram</strong>: time on the x-axis, frequency
+    on the y-axis, and color encoding amplitude. The conversion uses the <strong>Short-Time Fourier
+    Transform (STFT)</strong>, which slides a window across the waveform and asks "what frequencies
+    are present right now?".</p>
+
+  <pre><code>import librosa, numpy as np
+import matplotlib.pyplot as plt
+
+y, sr = librosa.load("ARU_2023-06-14_dawn.wav", sr=22050, mono=True, duration=10)
+
+# Mel-spectrogram: STFT, then warp the frequency axis to the mel scale
+# (roughly logarithmic, matching how mammals hear pitch).
+S = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=2048,
+                                   hop_length=512, n_mels=128, fmax=11000)
+S_db = librosa.power_to_db(S, ref=np.max)
+
+fig, ax = plt.subplots(figsize=(8, 3))
+librosa.display.specshow(S_db, x_axis="time", y_axis="mel", sr=sr,
+                         fmax=11000, ax=ax)
+ax.set_title("Mel-spectrogram of 10 s of dawn chorus")
+plt.colorbar(ax.collections[0], ax=ax, format="%+2.0f dB")
+plt.tight_layout()
+plt.savefig("melspec.png", dpi=150)</code></pre>
+
+  <p>Knobs that matter for ecology:</p>
+  <ul>
+    <li><strong>Sample rate (<code>sr</code>)</strong>. 22.05 kHz catches everything up to ~11 kHz,
+      which is enough for most birds and mammals. For bats, you need ultrasonic recordings (250+
+      kHz) and a different toolkit.</li>
+    <li><strong>Window length (<code>n_fft</code>)</strong>. Long windows give fine frequency
+      resolution but blur time. 2048 samples (~93 ms at 22.05 kHz) is a good default.</li>
+    <li><strong>Hop length</strong>. How far the window steps between frames. Smaller = smoother
+      spectrogram but more compute.</li>
+  </ul>
+
+  <h2>2. BirdNET</h2>
+  <p>BirdNET (Kahl et al., Cornell Lab of Ornithology) is a 6,000+-class bird vocalization
+    classifier. It takes 3-second mel-spectrograms and outputs per-class scores. It's the most
+    widely used tool for passive bird monitoring in 2026.</p>
+
+  <h3>Installing BirdNET-Analyzer</h3>
+  <pre><code>pip install birdnet-analyzer
+# or, the CLI tool from the official repo:
+git clone https://github.com/kahst/BirdNET-Analyzer
+cd BirdNET-Analyzer
+pip install -r requirements.txt</code></pre>
+
+  <h3>Running BirdNET from Python</h3>
+  <pre><code>"""
+run_birdnet.py
+
+Run BirdNET on every WAV in a directory and write a tidy detections CSV.
+"""
+import argparse, csv
+from pathlib import Path
+from birdnet_analyzer.analyze import analyze
+# birdnet_analyzer wraps the Cornell models; the call signature changes
+# occasionally — if this breaks, run `birdnet-analyzer --help` and adjust.
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--audio", required=True, help="Directory of WAV files")
+    p.add_argument("--out",   required=True, help="Output CSV")
+    p.add_argument("--lat",   type=float, default=44.06, help="Site latitude")
+    p.add_argument("--lon",   type=float, default=-121.32, help="Site longitude")
+    p.add_argument("--week",  type=int,   default=24,   help="Week of year")
+    p.add_argument("--min_conf", type=float, default=0.5)
+    args = p.parse_args()
+
+    rows = []
+    for wav in sorted(Path(args.audio).glob("*.wav")):
+        # 'analyze' returns a list of dicts: start_s, end_s, scientific_name,
+        # common_name, confidence. The lat/lon/week tell BirdNET which species
+        # to prioritise via its eBird-derived prior.
+        detections = analyze(
+            wav, lat=args.lat, lon=args.lon, week=args.week,
+            min_conf=args.min_conf, overlap=0.0, sensitivity=1.0,
+        )
+        for d in detections:
+            rows.append({"file": wav.name, **d})
+
+    with open(args.out, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"Wrote {len(rows)} detections to {args.out}")
+
+if __name__ == "__main__":
+    main()</code></pre>
+
+  <h3>Interpreting BirdNET outputs</h3>
+  <div class="callout warn">
+    <strong>BirdNET confidence is not a probability.</strong> A score of 0.7 in one habitat does
+    <em>not</em> mean the same thing as 0.7 in another. Always calibrate by hand-labeling a stratified
+    subsample at a few thresholds for each site before you trust the species list.
+  </div>
+  <ul>
+    <li>Lower-frequency species (owls, grouse) tend to have systematically lower scores. A 0.3
+      barred-owl detection is often correct; a 0.3 yellow-warbler detection often isn't.</li>
+    <li>BirdNET's eBird prior means that providing the right latitude/longitude/week meaningfully
+      reduces false positives. Always set them.</li>
+    <li>BirdNET is trained for bird vocalizations. It will sometimes "detect" frogs, squirrels, or
+      mechanical noise as a bird. Hand-check.</li>
+  </ul>
+
+  <h2>3. PNW-Cnet</h2>
+  <p>PNW-Cnet has two front-ends:</p>
+  <ul>
+    <li><strong><a href="https://github.com/zjruff/pycnet-audio">pycnet-audio</a></strong>
+      &mdash; the Python / CLI front-end. Scriptable, reproducible, ideal for
+      batch processing on a server. <em>This is what we'll set up below.</em></li>
+    <li><strong><a href="https://github.com/zjruff/Shiny_PNW-Cnet">Shiny PNW-Cnet</a></strong>
+      &mdash; an R Shiny <em>desktop GUI</em> that wraps the same model. Same
+      inputs and outputs, but with sliders, file pickers, and a built-in
+      review interface. The right choice for field crews who don't want a
+      terminal &mdash; especially undergrads and partner-agency biologists.
+      <strong><a href="../labs/lab11.html">Lab 11</a> walks you through using
+      it</strong>; for the rest of this tutorial we'll stick with the CLI.</li>
+  </ul>
+
+  <h3>3a. PNW-Cnet via <code>pycnet-audio</code></h3>
+  <p>PNW-Cnet (Pacific Northwest Convolutional Neural Network) is a CNN developed at Oregon State
+    University by Zack Ruff and colleagues to monitor northern spotted owls, barred owls, marbled
+    murrelets, and dozens of other species of forest-management concern. Unlike BirdNET, it works
+    on <strong>non-overlapping 12-second</strong> spectrograms covering 0&ndash;4000 Hz, and it is
+    explicitly calibrated for Pacific NW soundscapes. The current model (v5) has
+    <strong>135 output classes</strong>; the older v4 model has 51.</p>
+
+  <h4>Installation</h4>
+  <p><code>pycnet-audio</code> requires <strong>SoX</strong> (a command-line audio tool) for
+    spectrogram generation. It also pins to a TensorFlow version that fights with
+    <code>birdnet</code>, so it gets <strong>its own conda env</strong> (one of the
+    canonical cases for environments &mdash; see the
+    <a href="environments.html">Python Environments tutorial</a> for the why):</p>
+  <pre><code>mamba create -n pycnet -c conda-forge sox python=3.11 -y
+conda activate pycnet
+pip install pycnet-audio
+
+# Sanity check
+pycnet --help</code></pre>
+
+  <div class="callout note">
+    <code>pycnet-audio</code> supports Python 3.8&ndash;3.11. If your system Python is 3.12+, the
+    conda env above is mandatory; <code>pip install</code> into a 3.12 env will fail at the
+    TensorFlow dependency.
+  </div>
+
+  <h3>Running PNW-Cnet end-to-end on a folder of WAVs</h3>
+  <p>The all-in-one command is <code>pycnet process</code>. It inventories audio, generates
+    spectrograms, scores them with the model, and writes both a class-scores CSV and a
+    detection-summary CSV:</p>
+  <pre><code># macOS / Linux
+pycnet process /data/aru/site_blue_river \
+    -c v5 \
+    -r "STOC_4Note 0.50 STVA_8Note 0.75" \
+    -w 4 \
+    -a
+
+# Windows (PowerShell or Git Bash) &mdash; same command, Windows-style path:
+pycnet process F:\aru\site_blue_river -c v5 -r "STOC_4Note 0.50" -a</code></pre>
+
+  <p>Common flags:</p>
+  <table>
+    <tr><th>Flag</th><th>Meaning</th></tr>
+    <tr><td><code>-c v5</code></td><td>Model version (<code>v4</code> = 51 classes,
+        <code>v5</code> = 135 classes; default v5).</td></tr>
+    <tr><td><code>-r "CLASS thr CLASS thr ..."</code></td>
+        <td>Per-class score thresholds for the review file.</td></tr>
+    <tr><td><code>-w N</code></td><td>Worker processes for parallel spectrogram generation.</td></tr>
+    <tr><td><code>-a</code></td><td>Auto-delete the temporary spectrogram folder when done.</td></tr>
+    <tr><td><code>-f</code></td><td>Process FLAC files instead of WAV.</td></tr>
+    <tr><td><code>-i &lt;path&gt;</code></td><td>Write spectrograms to a different drive (useful when
+        your audio is on a slow archive disk).</td></tr>
+  </table>
+
+  <p>Other subcommands you'll meet:</p>
+  <ul>
+    <li><code>pycnet spectro &lt;dir&gt;</code> &mdash; generate spectrograms only.</li>
+    <li><code>pycnet predict &lt;dir&gt;</code> &mdash; score existing spectrograms.</li>
+    <li><code>pycnet review &lt;dir&gt; -r ...</code> &mdash; re-build the review file at new
+      thresholds without re-running the model.</li>
+    <li><code>pycnet batch_process file_of_dirs.txt</code> &mdash; run <code>process</code> across
+      many sites listed in a text file.</li>
+  </ul>
+
+  <h3>Output files</h3>
+  <p><code>pycnet process</code> writes three CSVs into the audio directory:</p>
+  <ul>
+    <li><strong><code>&lt;site&gt;_v5_class_scores.csv</code></strong> &mdash; one row per
+      12-second spectrogram: <code>Filename</code> + 135 class-score columns (or 51 for v4),
+      each a [0,1] score.</li>
+    <li><strong><code>&lt;site&gt;_v5_detection_summary.csv</code></strong> &mdash; aggregated
+      detection counts by Area / Site / Stn / Date / Threshold, plus <code>Clips</code> (number
+      of 12-s segments) and <code>Effort</code> (recording hours = Clips / 300).</li>
+    <li><strong><code>&lt;site&gt;_review_kscope.csv</code></strong> &mdash; Kaleidoscope-format
+      review file: one row per above-threshold clip, with <code>FOLDER, IN_FILE, OFFSET,
+      DURATION, DATE, TIME, TOP1MATCH, TOP1DIST, AUTO_TAG, MANUAL_ID</code> for human review.</li>
+  </ul>
+
+  <h3>Converting class-scores to long-form detections in Python</h3>
+  <pre><code>import pandas as pd
+
+raw = pd.read_csv("site_blue_river_v5_class_scores.csv")
+
+# Stack the class-score columns into long form
+long = raw.melt(id_vars=["Filename"], var_name="class", value_name="score")
+
+# Keep only above-threshold detections
+detections = long[long["score"] &gt;= 0.5].sort_values(["Filename", "class"])
+detections.to_csv("site_blue_river_detections.csv", index=False)
+print(detections["class"].value_counts().head(10))</code></pre>
+
+  <h3>When to use PNW-Cnet vs BirdNET</h3>
+  <table>
+    <tr><th></th><th>BirdNET</th><th>PNW-Cnet (v5)</th></tr>
+    <tr><td>Geographic coverage</td><td>Global</td><td>Pacific Northwest only</td></tr>
+    <tr><td>Class count</td><td>6,000+</td><td>135 (focused)</td></tr>
+    <tr><td>Time window</td><td>3 s</td><td>12 s, non-overlapping</td></tr>
+    <tr><td>Frequency range</td><td>up to ~15 kHz</td><td>0&ndash;4000 Hz</td></tr>
+    <tr><td>Best for</td><td>Songbird species lists</td><td>Owls, marbled murrelet, forest
+        management indicator species</td></tr>
+    <tr><td>Calibration burden</td><td>High &mdash; many classes, generic priors</td>
+        <td>Lower &mdash; calibrated for PNW soundscapes</td></tr>
+    <tr><td>GUI front-end</td><td>BirdNET-Analyzer (cross-platform)</td>
+        <td><a href="https://github.com/zjruff/Shiny_PNW-Cnet">Shiny_PNW-Cnet</a> (R Shiny app)</td></tr>
+  </table>
+
+  <h2>4. Training your own spectrogram classifier</h2>
+  <p>Sometimes the species or call type you care about isn't in BirdNET or PNW-Cnet. The standard
+    pattern: cut your audio into 3&ndash;5 s clips, compute mel-spectrograms, and fine-tune a small
+    CNN (e.g., MobileNetV3 or ResNet-18) on the spectrograms <em>as images</em>.</p>
+
+  <pre><code>"""
+train_spec_cnn.py
+
+Train a small CNN on a folder of labeled audio clips.
+
+Expected layout:
+    clips/
+        barred_owl_duet/
+            clip0001.wav
+            clip0002.wav
+            ...
+        background/
+            ...
+        other_owl/
+            ...
+"""
+import torch, torch.nn as nn, torch.optim as optim
+from torch.utils.data import Dataset, DataLoader
+from torchvision import models, transforms
+import librosa, numpy as np
+from pathlib import Path
+from PIL import Image
+import io
+
+class SpectrogramDataset(Dataset):
+    """Compute the mel-spectrogram on the fly for each clip."""
+    def __init__(self, root, sr=22050, n_mels=128, duration=3.0, transform=None):
+        self.items, self.classes = [], sorted(p.name for p in Path(root).iterdir() if p.is_dir())
+        for label, cls in enumerate(self.classes):
+            for wav in (Path(root) / cls).glob("*.wav"):
+                self.items.append((wav, label))
+        self.sr, self.n_mels, self.duration = sr, n_mels, duration
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, idx):
+        wav, label = self.items[idx]
+        y, _ = librosa.load(wav, sr=self.sr, mono=True, duration=self.duration)
+        # Zero-pad short clips
+        target = int(self.sr * self.duration)
+        if len(y) &lt; target:
+            y = np.pad(y, (0, target - len(y)))
+        S = librosa.feature.melspectrogram(y=y, sr=self.sr, n_mels=self.n_mels)
+        S_db = librosa.power_to_db(S, ref=np.max)
+        # Normalize to [0, 1] and stack to 3 channels so we can use ImageNet weights
+        img = (S_db - S_db.min()) / (S_db.max() - S_db.min() + 1e-9)
+        img = np.stack([img] * 3, axis=0).astype(np.float32)
+        x = torch.from_numpy(img)
+        if self.transform:
+            x = self.transform(x)
+        return x, label
+
+def main():
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    train_ds = SpectrogramDataset("clips/train")
+    val_ds   = SpectrogramDataset("clips/val")
+    train_dl = DataLoader(train_ds, batch_size=16, shuffle=True,  num_workers=2)
+    val_dl   = DataLoader(val_ds,   batch_size=16, shuffle=False, num_workers=2)
+
+    model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
+    model.fc = nn.Linear(model.fc.in_features, len(train_ds.classes))
+    model = model.to(device)
+
+    crit = nn.CrossEntropyLoss()
+    opt  = optim.AdamW(model.parameters(), lr=3e-4)
+
+    for epoch in range(8):
+        model.train()
+        for x, y in train_dl:
+            x, y = x.to(device), y.to(device)
+            opt.zero_grad()
+            loss = crit(model(x), y)
+            loss.backward()
+            opt.step()
+
+        model.eval()
+        correct = total = 0
+        with torch.no_grad():
+            for x, y in val_dl:
+                x, y = x.to(device), y.to(device)
+                preds = model(x).argmax(1)
+                correct += (preds == y).sum().item()
+                total += y.size(0)
+        print(f"epoch {epoch+1}: val_acc={correct/total:.3f}")
+
+    torch.save(model.state_dict(), "spec_cnn.pt")
+    print("Saved spec_cnn.pt; classes =", train_ds.classes)
+
+if __name__ == "__main__":
+    main()</code></pre>
+
+  <h2>5. The honest pitfalls of acoustic monitoring</h2>
+  <ul>
+    <li><strong>Site-correlated noise</strong>. A creek, a road, a generator &mdash; the network
+      learns these and "detects" the site, not the species. Always evaluate on held-out sites.</li>
+    <li><strong>Distance effects</strong>. Closer calls produce higher scores, biasing
+      "more activity" toward sites with closer perch trees. Calibrate per site.</li>
+    <li><strong>Annotation bias</strong>. If your training data was annotated by listening to high
+      points in the day, your model will fail in low-activity periods.</li>
+    <li><strong>Temporal pseudo-replication</strong>. 300 detections from one bird singing for an
+      hour is not 300 independent observations &mdash; aggregate before modeling.</li>
+  </ul>
+
+  <p><a href="../labs/lab6.html">→ Continue to Lab 6: BirdNET on a dawn chorus</a></p>
+
+  <footer>Bioacoustics toolkit &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab 3 · YOLO Detection · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="../tutorials/python-intro.html">Python Crash Course</a>
+    <a href="../tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="../tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="../tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="../tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="../tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="../tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="../tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="../tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="lab1.html">Lab 1 · Python</a>
+    <a href="lab2.html">Lab 2 · PyTorch</a>
+    <a href="lab3.html" class="current">Lab 3 · YOLO Detection</a>
+    <a href="lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="lab5.html">Lab 5 · Species Classifier</a>
+    <a href="lab6.html">Lab 6 · BirdNET</a>
+    <a href="lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Lab 3 &middot; Run YOLO and MegaDetector on Oregon Critters</h1>
+
+  <div class="lab-meta">
+    <strong>Worth:</strong> 20 points &nbsp;|&nbsp;
+    <strong>Due:</strong> end of Day 2 &nbsp;|&nbsp;
+    <strong>Files to submit:</strong> <code>detections_megadetector.csv</code>,
+    <code>detections_yolov8.csv</code>, <code>pr_curves.png</code>, and a 1-page PDF.<br>
+    <strong>Pre-reading:</strong> <a href="../tutorials/yolo-darknet.html">YOLO &amp; Darknet
+    tutorial</a>.
+  </div>
+
+  <h2>Biological motivation</h2>
+  <p>Most camera-trap workflows in 2026 start with a "where is the animal?" detector before any
+    species classifier. MegaDetector is the standard baseline. In this lab you'll compare
+    MegaDetector v5 to a generic Ultralytics YOLOv8 on the same image set and reason about
+    the precision/recall tradeoff for an ecologist's actual workflow.</p>
+
+  <h2>Data</h2>
+  <div class="callout tip"><strong>Get the data:</strong> <a href="../downloads/aiecol_cameratraps.zip">aiecol_cameratraps.zip (297 MB)</a> &mdash; or the full bundle <a href="../downloads/aiecol_data_sample.zip">aiecol_data_sample.zip (395 MB)</a>. See the <a href="../downloads/index.html">downloads page</a> for layout.</div>
+  <p>A 2,000-image evaluation set drawn from Oregon Critters with <strong>hand-drawn ground-truth
+    bounding boxes</strong> for every animal. Provided as
+    <code>oregon_critters_eval/{images,labels_yolo}/</code> in YOLO format.</p>
+
+  <h2>Tasks</h2>
+
+  <h3>Task 1 &mdash; MegaDetector baseline (5 pts)</h3>
+  <p>Install the <code>megadetector</code> package:</p>
+  <pre><code>pip install megadetector
+megadetector run_detector_batch \
+    --model_file MDV5A.0.0.pt \
+    --image_dir oregon_critters_eval/images \
+    --output_file detections_megadetector.json \
+    --recursive</code></pre>
+  <p>Convert the JSON to a tidy CSV with the columns
+    <code>image, class_id, class_name, confidence, x1, y1, x2, y2</code>.</p>
+
+  <h3>Task 2 &mdash; YOLOv8 generic (4 pts)</h3>
+  <p>Run <a href="../code/cameratraps/detect_oregon_critters.py">detect_oregon_critters.py</a> with
+    <code>yolov8s.pt</code>. (Note: YOLOv8 generic is trained on COCO &mdash; classes like
+    <em>"dog"</em>, <em>"horse"</em>, <em>"bear"</em>. It will mis-classify many Oregon species,
+    but for <em>detection</em> only we'll collapse all classes to "animal".)</p>
+
+  <h3>Task 3 &mdash; precision-recall curves (5 pts)</h3>
+  <p>Match each predicted box to a ground-truth box at IoU &ge; 0.5. For each model:</p>
+  <ul>
+    <li>Sweep confidence threshold from 0 to 1 in 0.01 increments.</li>
+    <li>Compute precision and recall at each threshold.</li>
+    <li>Plot both models' P-R curves on one figure (<code>pr_curves.png</code>).</li>
+  </ul>
+  <p>A helper function for IoU is in
+    <a href="../code/cameratraps/iou_utils.py">iou_utils.py</a>.</p>
+
+  <h3>Task 4 &mdash; pick a threshold (3 pts)</h3>
+  <p>You're advising a biologist who has 800,000 camera-trap images and will hand-verify every
+    above-threshold detection. They can verify ~5,000 images. Which threshold do you recommend for
+    MegaDetector to keep their workload under budget while losing as few real animals as possible?
+    Show the math.</p>
+
+  <h3>Task 5 &mdash; interpretation (3 pts)</h3>
+  <p>In 150 words: where does each detector fail? Small animals far away? Cropped/edge animals?
+    Glare? Show 2&ndash;3 thumbnails of failure modes in your PDF.</p>
+
+  <h2>Go-further</h2>
+  <p>Repeat the analysis stratified by daytime vs nighttime (use your Lab 2 classifier!) and report
+    whether either detector is meaningfully worse at night.</p>
+
+  <h2>Rubric</h2>
+  <table>
+    <tr><th>Component</th><th>Points</th></tr>
+    <tr><td>Both detectors run and produce tidy CSVs</td><td>9</td></tr>
+    <tr><td>P-R curves correctly computed and plotted</td><td>4</td></tr>
+    <tr><td>Threshold recommendation with quantitative justification</td><td>3</td></tr>
+    <tr><td>Interpretation</td><td>4</td></tr>
+    <tr><th>Total</th><th>20</th></tr>
+  </table>
+
+  <footer>Lab 3 &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

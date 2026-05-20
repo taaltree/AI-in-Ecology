@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Full Schedule · AI in Ecology</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="index.html">Syllabus &amp; Home</a>
+    <a href="schedule.html" class="current">Full Schedule</a>
+    <a href="lectures/index.html">Lecture Slides</a>
+    <a href="downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="tutorials/python-intro.html">Python Crash Course</a>
+    <a href="tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="labs/lab1.html">Lab 1 · Python</a>
+    <a href="labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Detailed schedule</h1>
+  <p class="lead">Each day runs 9:00&ndash;12:00 and 13:30&ndash;16:30. Lectures are ~60 min; labs are
+    ~2 h with the instructor circulating. Labs continue into the evening if you want — TAs are
+    available until 18:00.</p>
+
+  <div class="callout note">
+    <strong>Before Day 1:</strong>
+    <ol style="margin:6px 0 0 18px">
+      <li><strong>Watch</strong> <a href="https://www.youtube.com/watch?v=5rE2ogBh0zc">Sara Beery's
+        intro lecture</a> (~70 min on YouTube) &mdash; it frames everything we do in the CV
+        lectures.</li>
+      <li><strong>Skim</strong> the 12 PDF/PPT slide decks shipped with the course
+        (<code>Lecture 0_*</code> through <code>Lecture 11_*</code> at the project root).
+        <em>These are Sara Beery's slides from her CV short course</em>, used here with
+        attribution &mdash; please don't redistribute.</li>
+      <li><strong>Install</strong> Python 3.11+, VS Code, <code>git</code>, Claude Code, and
+        download the <a href="https://lila.science/datasets/oregon-critters/">Oregon Critters</a>
+        sample (instructions on the <a href="tutorials/python-intro.html">Python tutorial page</a>).</li>
+    </ol>
+  </div>
+
+  <!-- DAY 1 -->
+  <div class="day-block">
+    <h3>Day 1 &middot; Foundations</h3>
+
+    <div class="session">
+      <div class="time">9:00<br>Morning</div>
+      <div>
+        <span class="pill lec">Lecture</span> <strong>Intro to AI in ecology.</strong>
+        Where deep learning has and has not changed wildlife biology; the camera-trap and bioacoustic
+        data deluge; what pretrained models can and cannot do; ethical considerations (location
+        privacy of endangered species, data ownership with tribal partners). Uses
+        material from <a href="lectures/Lecture 0_ Intro and Logistics.pptx"><em>Lecture 0 (Intro and Logistics)</em></a> and <a href="lectures/Lecture 0_ Intro to CV.pdf"><em>Lecture 0 (Intro to CV)</em></a>.
+      </div>
+    </div>
+    <div class="session">
+      <div class="time">10:15</div>
+      <div>
+        <span class="pill lab">Lab 1</span> <a href="labs/lab1.html">Python crash course (20 pts).</a>
+        Jupyter, NumPy, pandas, matplotlib, walking a directory of camera-trap images, reading
+        EXIF timestamps.
+      </div>
+    </div>
+
+    <div class="session">
+      <div class="time">13:30<br>Afternoon</div>
+      <div>
+        <span class="pill lec">Lecture</span> <strong>PyTorch and the deep-learning workflow.</strong>
+        Tensors, autograd, loss functions, optimizers; what really happens during training; CPU vs
+        GPU; the difference between "training", "fine-tuning", and "inference". Draws from
+        <a href="lectures/Lecture 1_ IDEs, git, and remote workflow.pptx"><em>Lecture 1 (IDEs, git, remote workflow)</em></a> and <a href="lectures/Lecture 3_ Best practices for ML codebase.pdf"><em>Lecture 3 (Best practices for ML codebases)</em></a>.
+      </div>
+    </div>
+    <div class="session">
+      <div class="time">14:45</div>
+      <div>
+        <span class="pill lab">Lab 2</span> <a href="labs/lab2.html">PyTorch tutorial (20 pts).</a>
+        Train a tiny CNN to distinguish daytime vs nighttime camera-trap images. End-to-end:
+        DataLoader → model → loss → optimizer → epoch loop → evaluation.
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 2 -->
+  <div class="day-block">
+    <h3>Day 2 &middot; Camera traps I &mdash; Detection</h3>
+
+    <div class="session">
+      <div class="time">9:00</div>
+      <div>
+        <span class="pill lec">Lecture</span> <strong>Object detection for camera traps.</strong>
+        Two-stage vs one-stage detectors, anchors, NMS; MegaDetector (animal/person/vehicle);
+        YOLO family from v3 → v8; Darknet vs Ultralytics. Background reading from
+        <a href="lectures/Lecture 4_ Working with Open-source CV Codebases.pptx"><em>Lecture 4 (Working with open-source CV codebases)</em></a> and
+        <a href="lectures/Lecture 5_ Evaluation Metrics.pdf"><em>Lecture 5 (Evaluation metrics)</em></a>.
+      </div>
+    </div>
+    <div class="session">
+      <div class="time">10:15</div>
+      <div>
+        <span class="pill lab">Lab 3</span> <a href="labs/lab3.html">Detection on Oregon Critters (20 pts).</a>
+        Run MegaDetector and pretrained YOLOv8 on ~2,000 Oregon Critters images; produce a
+        precision-recall curve; reason about confidence thresholds.
+      </div>
+    </div>
+
+    <div class="session">
+      <div class="time">13:30</div>
+      <div>
+        <span class="pill lec">Lecture</span> <strong>Training and fine-tuning detectors.</strong>
+        Anchors, augmentation, class imbalance, learning-rate schedules. When fine-tuning beats
+        starting from scratch (almost always). From <a href="lectures/Lecture 2_ Data Visualization, Data Splitting and Avoiding Data Poisoning.pptx"><em>Lecture 2 (Data visualization, splitting, avoiding data poisoning)</em></a> and <a href="lectures/Lecture 7_ What's Next_ Improving Results.pptx"><em>Lecture 7 (Improving results)</em></a>.
+      </div>
+    </div>
+    <div class="session">
+      <div class="time">14:45</div>
+      <div>
+        <span class="pill lab">Lab 4</span> <a href="labs/lab4.html">Train a custom YOLO detector (20 pts).</a>
+        Fine-tune YOLOv8 on a 4-class Oregon Critters subset (deer, black bear, cougar, coyote).
+        Inspect training curves, mAP@0.5, and per-class confusion.
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 3 -->
+  <div class="day-block">
+    <h3>Day 3 &middot; Camera traps II + Bioacoustics intro</h3>
+
+    <div class="session">
+      <div class="time">9:00</div>
+      <div>
+        <span class="pill lec">Lecture</span> <strong>Image classification on detected crops.</strong>
+        The "detect then classify" pipeline; transfer learning with ResNet/EfficientNet; class
+        imbalance; the trap of evaluating on within-site holdouts. Material from
+        <a href="lectures/Lecture 6_ Probing model performance.pptx"><em>Lecture 6 (Probing model performance)</em></a>.
+      </div>
+    </div>
+    <div class="session">
+      <div class="time">10:15</div>
+      <div>
+        <span class="pill lab">Lab 5</span> <a href="labs/lab5.html">Species classifier (20 pts).</a>
+        Crop animals from your Day-2 detections; fine-tune a ResNet-50; report site-stratified
+        accuracy and a confusion matrix.
+      </div>
+    </div>
+
+    <div class="session">
+      <div class="time">13:30</div>
+      <div>
+        <span class="pill lec">Lecture</span> <strong>Intro to bioacoustic monitoring.</strong>
+        Why spectrograms (STFT, mel scale); ARUs and recording schedules; what counts as a "labeled
+        spectrogram"; soundscape vs focal recording; ethical issues around recording in protected
+        areas.
+      </div>
+    </div>
+    <div class="session">
+      <div class="time">14:45</div>
+      <div>
+        <span class="pill lab">Lab 6</span> <a href="labs/lab6.html">BirdNET inference (20 pts).</a>
+        Run BirdNET on a 24 h dawn-chorus recording from a Pacific NW site; build a species
+        accumulation curve; calibrate confidence thresholds against a hand-labeled subset.
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 4 -->
+  <div class="day-block">
+    <h3>Day 4 &middot; Bioacoustics + Claude Code</h3>
+
+    <div class="session">
+      <div class="time">9:00</div>
+      <div>
+        <span class="pill lec">Lecture</span> <strong>PNW-Cnet and custom acoustic classifiers.</strong>
+        Why PNW-Cnet was built (spotted owl monitoring), its 4-second spectrogram inputs, its
+        51-class output; when you should train your own classifier instead. Material on efficient
+        models from <a href="lectures/Lecture 10_ Efficient Models and Speed vs Accuracy.pdf"><em>Lecture 10</em></a>.
+      </div>
+    </div>
+    <div class="session">
+      <div class="time">10:15</div>
+      <div>
+        <span class="pill lab">Lab 7</span> <a href="labs/lab7.html">PNW-Cnet + small custom CNN (20 pts).</a>
+        Run PNW-Cnet on a forest soundscape. Train a small CNN to detect a non-PNW-Cnet target
+        (e.g., barred-owl pair duet) from labeled spectrograms.
+      </div>
+    </div>
+
+    <div class="session">
+      <div class="time">13:30</div>
+      <div>
+        <span class="pill lec">Lecture</span> <strong>Claude Code for research.</strong>
+        Installing on macOS and Windows; the terminal CLI vs the desktop app; plan mode; what an
+        MCP server is and why you might add one (e.g., for R); how Claude Code differs from
+        ChatGPT and from GitHub Copilot. Includes a live demo of the same task done four ways.
+      </div>
+    </div>
+    <div class="session">
+      <div class="time">14:45</div>
+      <div>
+        <span class="pill lab">Lab 8</span> <a href="labs/lab8.html">Claude Code pipeline (20 pts).</a>
+        Use Claude Code to write a script that ingests camera-trap CSVs, runs MegaDetector, and
+        produces a tidy detection table. You will be graded on the <em>quality of your prompts</em>
+        and the correctness of the output, not on writing the code yourself.
+      </div>
+    </div>
+
+    <div class="session">
+      <div class="time">18:30<br>Evening</div>
+      <div>
+        <span class="pill lab">Lab 11</span> <a href="labs/lab11.html">GUI workflows: Shiny PNW-Cnet + Njobvu-AI (20 pts).</a>
+        ~3-h optional evening lab (graded if attempted). Install and use Zack Ruff's
+        <a href="https://github.com/zjruff/Shiny_PNW-Cnet">Shiny PNW-Cnet</a>
+        as a GUI alternative to the <code>pycnet</code> CLI; install
+        <a href="https://github.com/sullichrosu/Njobvu-AI">Njobvu-AI</a> and
+        use it to collaboratively label and train on a small image set.
+        Reading: Appel et al. 2025, <em>Ecological Applications</em>
+        (<a href="https://doi.org/10.1002/eap.70096">doi:10.1002/eap.70096</a>).
+        Light dinner provided.
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 5 -->
+  <div class="day-block">
+    <h3>Day 5 &middot; Statistical &amp; mechanistic modeling</h3>
+
+    <div class="session">
+      <div class="time">9:00</div>
+      <div>
+        <span class="pill lec">Lecture</span> <strong>Parameter recovery as a tool for trust.</strong>
+        Why every statistical pipeline you build should be tested on simulated data first. Worked
+        examples: single-season occupancy, N-mixture, Cormack-Jolly-Seber, simple logistic SDM.
+      </div>
+    </div>
+    <div class="session">
+      <div class="time">10:15</div>
+      <div>
+        <span class="pill lab">Lab 9</span> <a href="labs/lab9.html">Parameter recovery simulation (20 pts).</a>
+        With Claude Code: simulate occupancy data with known parameters, fit an
+        <code>unmarked::occu</code> model 500 times, and show empirically that the estimator is
+        unbiased.
+      </div>
+    </div>
+
+    <div class="session">
+      <div class="time">13:30</div>
+      <div>
+        <span class="pill lec">Lecture</span> <strong>When assumptions break, and how to report it.</strong>
+        Closure violations in occupancy; heterogeneity in N-mixture; ghost individuals in CJS;
+        misclassified detections from a CV classifier propagating into occupancy. Reading the
+        consequences honestly. Material from <a href="lectures/Lecture 11_ What Do I Do With My (Imperfect) Model_.pptx"><em>Lecture 11 (What do I do with my imperfect model?)</em></a>.
+      </div>
+    </div>
+    <div class="session">
+      <div class="time">14:45</div>
+      <div>
+        <span class="pill lab">Lab 10</span> <a href="labs/lab10.html">Robust analysis &amp; report (20 pts).</a>
+        Break one assumption of your Lab-9 model on purpose; quantify the resulting bias; write a
+        one-page methods + results section that an editor would accept. Final-project pitches
+        due at end of day.
+      </div>
+    </div>
+  </div>
+
+  <h2>After the course</h2>
+  <ul>
+    <li><strong>Day +3:</strong> 1-paragraph final-project proposal due.</li>
+    <li><strong>Day +14:</strong> Final project (code + report) due by 23:59.</li>
+    <li><strong>Day +21:</strong> Grades returned.</li>
+  </ul>
+
+  <footer>Applications of AI in Ecology &middot; schedule</footer>
+</main>
+</div>
+</body>
+</html>

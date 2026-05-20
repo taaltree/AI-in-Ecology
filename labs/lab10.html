@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab 10 · Robust Analysis &amp; Reporting · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="../tutorials/python-intro.html">Python Crash Course</a>
+    <a href="../tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="../tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="../tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="../tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="../tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="../tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="../tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="../tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="lab1.html">Lab 1 · Python</a>
+    <a href="lab2.html">Lab 2 · PyTorch</a>
+    <a href="lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="lab5.html">Lab 5 · Species Classifier</a>
+    <a href="lab6.html">Lab 6 · BirdNET</a>
+    <a href="lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="lab10.html" class="current">Lab 10 · Robust Analysis</a>
+    <a href="lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Lab 10 &middot; When Assumptions Break: Robust Analysis &amp; Reporting</h1>
+
+  <div class="lab-meta">
+    <strong>Worth:</strong> 20 points &nbsp;|&nbsp;
+    <strong>Due:</strong> end of Day 5 &nbsp;|&nbsp;
+    <strong>Files to submit:</strong> R scripts, <code>bias_plot.png</code>, your
+    <code>prompts.md</code>, and a <strong>2-page</strong> "methods + results" PDF written as
+    if for a journal supplement.<br>
+    <strong>Pre-reading:</strong> Lab 9 (you'll extend its simulator), and one of: Royle &amp;
+    Nichols (2003) heterogeneity in occupancy; Rota et al. (2009) closure violations.
+  </div>
+
+  <h2>Biological motivation</h2>
+  <p>In Lab 9 you proved that <code>unmarked::occu</code> recovers unbiased estimates when its
+    assumptions are met. They are <em>never</em> fully met in the field. This lab is about how
+    to quantify and honestly report the bias introduced when an assumption is broken &mdash; and
+    about your responsibility, as the AI-assisted scientist, to defend your model.</p>
+
+  <h2>The three break-it scenarios</h2>
+  <p>You will pick <strong>one</strong> of the following to study in depth (or invent your own
+    and get instructor approval):</p>
+  <ol>
+    <li><strong>Closure violation.</strong> During the season, the true z[i] is not fixed:
+      animals colonise / leave 5&ndash;25% of sites between visits. Does &psi;&#770; from a
+      single-season model bias high or low?</li>
+    <li><strong>Heterogeneity in detection.</strong> Detection probability is not constant
+      across sites: p ~ Beta(&alpha;, &beta;) with mean 0.3 but a heavy tail. What does the
+      model report when you fit constant-p?</li>
+    <li><strong>Classifier-induced misclassification.</strong> Your camera-trap species
+      classifier (e.g., Lab 5) has 90% recall and 95% precision for your focal species. Detections
+      from <em>other</em> species get mis-labeled into the focal class at the corresponding rate.
+      What does the resulting occupancy estimate look like, and how does it depend on the
+      "ambient density" of the other species?</li>
+  </ol>
+
+  <h2>Tasks</h2>
+
+  <h3>Task 1 &mdash; project setup (2 pts)</h3>
+  <p>Continue from your Lab 9 project (or start fresh and copy your Lab 9 code in). Update
+    <code>CLAUDE.md</code> to describe which scenario you picked and the null model you'll
+    contrast against.</p>
+
+  <h3>Task 2 &mdash; extend the simulator (6 pts)</h3>
+  <p>Ask Claude Code to modify your Lab-9 <code>simulate_occu()</code> to take a parameter
+    controlling the assumption violation (e.g., <code>turnover_rate</code>,
+    <code>p_dispersion</code>, or <code>classifier_recall</code> + <code>classifier_precision</code>
+    + <code>ambient_prevalence</code>). Carefully write the math of the violation into a comment
+    block at the top of the function &mdash; you must understand it, not just have Claude write
+    it.</p>
+
+  <h3>Task 3 &mdash; bias sweep (4 pts)</h3>
+  <p>Run 500 simulations at each of 6 levels of your violation parameter (e.g., turnover
+    0, 0.05, 0.1, 0.15, 0.2, 0.25). Plot mean estimated &psi; vs the true &psi; as a function of
+    the violation level (<code>bias_plot.png</code>), with 95% empirical envelopes.</p>
+
+  <h3>Task 4 &mdash; pick the right alternative model (3 pts)</h3>
+  <p>Choose a model that explicitly relaxes the assumption you broke (e.g., dynamic occupancy
+    for closure violations, occupancy with a logit-normal random effect on p for heterogeneity,
+    a measurement-error occupancy model for misclassification). Fit it to one mid-level violation
+    dataset. Does it recover the truth?</p>
+
+  <h3>Task 5 &mdash; write the methods + results (5 pts)</h3>
+  <p>In <strong>2 pages</strong> (no more), write the methods and results section as if for a
+    journal supplement. Required sections:</p>
+  <ul>
+    <li>"Simulation setup" &mdash; precise enough to replicate.</li>
+    <li>"Bias under assumption X" &mdash; with <code>bias_plot.png</code>.</li>
+    <li>"Mitigation with model Y" &mdash; with a table of estimates.</li>
+    <li>"Recommendation for practitioners" &mdash; in your own words, no AI.</li>
+    <li>"Tools used" appendix &mdash; Claude Code, R packages, versions.</li>
+  </ul>
+
+  <div class="callout warn">
+    <strong>About the writing:</strong> the "Recommendation for practitioners" and the
+    interpretive narrative must be in your own voice. You may use Claude to copy-edit your prose.
+    You may not have Claude draft the interpretation.
+  </div>
+
+  <h2>Rubric</h2>
+  <table>
+    <tr><th>Component</th><th>Points</th></tr>
+    <tr><td>Project setup and CLAUDE.md</td><td>2</td></tr>
+    <tr><td>Extended simulator with documented math</td><td>4</td></tr>
+    <tr><td>Bias sweep with plot</td><td>4</td></tr>
+    <tr><td>Alternative model fit and comparison</td><td>3</td></tr>
+    <tr><td>2-page methods + results (writing quality, honesty)</td><td>7</td></tr>
+    <tr><th>Total</th><th>20</th></tr>
+  </table>
+
+  <p>This lab also doubles as a <strong>final project pitch</strong>: the same scenario you
+    studied here is a fine starting point for the final project if you want to extend it.</p>
+
+  <footer>Lab 10 &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

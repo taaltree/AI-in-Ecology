@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab 9 · Parameter Recovery Simulation · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="../tutorials/python-intro.html">Python Crash Course</a>
+    <a href="../tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="../tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="../tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="../tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="../tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="../tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="../tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="../tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="lab1.html">Lab 1 · Python</a>
+    <a href="lab2.html">Lab 2 · PyTorch</a>
+    <a href="lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="lab5.html">Lab 5 · Species Classifier</a>
+    <a href="lab6.html">Lab 6 · BirdNET</a>
+    <a href="lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="lab9.html" class="current">Lab 9 · Parameter Recovery Sim</a>
+    <a href="lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Lab 9 &middot; Parameter Recovery for a Single-Season Occupancy Model</h1>
+
+  <div class="lab-meta">
+    <strong>Worth:</strong> 20 points &nbsp;|&nbsp;
+    <strong>Due:</strong> end of Day 5 (morning) &nbsp;|&nbsp;
+    <strong>Files to submit:</strong> all R scripts, the simulation result RDS,
+    <code>recovery_plots.png</code>, your <code>CLAUDE.md</code> and <code>prompts.md</code>, and
+    a 1-page PDF.<br>
+    <strong>Pre-reading:</strong> a section on single-season occupancy
+    (MacKenzie et al. 2002; <code>?unmarked::occu</code>).
+  </div>
+
+  <h2>Biological motivation</h2>
+  <p>The most important question to answer about <em>any</em> statistical pipeline is: "does it
+    return the right answer when I know what the right answer is?" This is parameter recovery via
+    simulation. Every model you publish should have one. In this lab you'll do it for the
+    workhorse model of camera-trap analysis &mdash; the single-season occupancy model &mdash; and
+    you'll do it with Claude Code as your collaborator.</p>
+
+  <h2>What you'll prove</h2>
+  <p>Given <em>S</em> sites, <em>K</em> repeat visits, true occupancy
+    <span style="font-family:serif">&psi;</span> and true detection probability
+    <span style="font-family:serif">p</span>, simulate detection/non-detection histories, fit
+    <code>unmarked::occu</code>, repeat 500 times, and show:</p>
+  <ol>
+    <li>The mean of the 500 <span style="font-family:serif">&psi;&#770;</span> estimates is close
+      to the true <span style="font-family:serif">&psi;</span>.</li>
+    <li>The mean of the 500 <span style="font-family:serif">p&#770;</span> estimates is close to
+      the true <span style="font-family:serif">p</span>.</li>
+    <li>The empirical 95% interval covers the truth ~95% of the time.</li>
+    <li>The estimator is reliable for a realistic (S, K) but degrades for small designs.</li>
+  </ol>
+
+  <h2>Tasks</h2>
+
+  <h3>Task 1 &mdash; project + CLAUDE.md (2 pts)</h3>
+  <p>Create <code>lab9/</code>, <code>git init</code>, write a <code>CLAUDE.md</code> that says:</p>
+  <ul>
+    <li>The biological scenario (a hypothetical 4-week single-season cougar survey).</li>
+    <li>The R packages you'll use (<code>unmarked</code>, <code>tidyverse</code>,
+      <code>furrr</code> for parallel).</li>
+    <li>Random seed: 42.</li>
+    <li>Your reproducibility policy: results must be re-creatable by <code>Rscript run.R</code>
+      with no manual steps.</li>
+  </ul>
+
+  <h3>Task 2 &mdash; ask Claude to write the simulator (5 pts)</h3>
+  <p>In plan mode, prompt Claude Code with:</p>
+  <pre><code>Write an R function `simulate_occu(S, K, psi, p, seed)` that:
+  - draws S latent occupancy indicators z[i] ~ Bernoulli(psi),
+  - draws S x K detection matrix y[i,j] ~ Bernoulli(z[i] * p),
+  - returns an unmarkedFrameOccu object.
+Also write a separate function `fit_occu(uf)` that fits the constant-psi,
+constant-p occupancy model and returns the back-transformed psi and p
+estimates plus their 95% Wald CIs.</code></pre>
+  <p>Review the plan. Approve. Save Claude's response in <code>prompts.md</code>.</p>
+
+  <h3>Task 3 &mdash; run 500 sims, four scenarios (5 pts)</h3>
+  <p>Ask Claude to run 500 simulations under each of these scenarios:</p>
+  <table>
+    <tr><th>Scenario</th><th>S</th><th>K</th><th>&psi;</th><th>p</th></tr>
+    <tr><td>A: typical</td><td>60</td><td>6</td><td>0.4</td><td>0.3</td></tr>
+    <tr><td>B: low p</td><td>60</td><td>6</td><td>0.4</td><td>0.1</td></tr>
+    <tr><td>C: few sites</td><td>20</td><td>6</td><td>0.4</td><td>0.3</td></tr>
+    <tr><td>D: many visits</td><td>60</td><td>12</td><td>0.4</td><td>0.3</td></tr>
+  </table>
+
+  <h3>Task 4 &mdash; plot recovery (4 pts)</h3>
+  <p>Produce <code>recovery_plots.png</code>: a 2x2 panel, one per scenario, showing histograms of
+    the 500 <span style="font-family:serif">&psi;&#770;</span> estimates with the true value
+    marked. Below each panel: the empirical bias (mean estimate &minus; true) and the empirical
+    95% CI coverage.</p>
+
+  <h3>Task 5 &mdash; written interpretation (4 pts)</h3>
+  <p>In 250 words, answer: under which scenario does <code>unmarked::occu</code> show the most
+    bias? When does coverage break down? Which is the more dangerous regime &mdash; low
+    detectability or few sites? What does this mean for designing a real survey?</p>
+
+  <h2>Go-further</h2>
+  <p>Add covariates: simulate &psi; as a function of elevation; fit the model with elevation as
+    a covariate; show that the slope coefficient is recovered without bias.</p>
+
+  <h2>Rubric</h2>
+  <table>
+    <tr><th>Component</th><th>Points</th></tr>
+    <tr><td>Project setup and CLAUDE.md</td><td>2</td></tr>
+    <tr><td>Quality of prompts (plan-mode usage, specificity) saved in prompts.md</td><td>4</td></tr>
+    <tr><td>Working sim + fit code; reproducible with one command</td><td>5</td></tr>
+    <tr><td>All four scenarios run; results saved</td><td>3</td></tr>
+    <tr><td>2x2 recovery plot with bias and coverage</td><td>2</td></tr>
+    <tr><td>Interpretation</td><td>4</td></tr>
+    <tr><th>Total</th><th>20</th></tr>
+  </table>
+
+  <p><strong>Starter sketch:</strong>
+    <a href="../code/modeling/lab9_skeleton.R">lab9_skeleton.R</a> (intentionally minimal &mdash;
+    Claude should fill it in).</p>
+
+  <footer>Lab 9 &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

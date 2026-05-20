@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab 4 · Train Custom YOLO · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="../tutorials/python-intro.html">Python Crash Course</a>
+    <a href="../tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="../tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="../tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="../tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="../tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="../tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="../tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="../tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="lab1.html">Lab 1 · Python</a>
+    <a href="lab2.html">Lab 2 · PyTorch</a>
+    <a href="lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="lab4.html" class="current">Lab 4 · Train Custom YOLO</a>
+    <a href="lab5.html">Lab 5 · Species Classifier</a>
+    <a href="lab6.html">Lab 6 · BirdNET</a>
+    <a href="lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Lab 4 &middot; Fine-Tune YOLOv8 on Oregon Critters (4 classes)</h1>
+
+  <div class="lab-meta">
+    <strong>Worth:</strong> 20 points &nbsp;|&nbsp;
+    <strong>Due:</strong> end of Day 2 &nbsp;|&nbsp;
+    <strong>Files to submit:</strong> training run directory (curves, confusion matrix,
+    <code>best.pt</code>), a 1-page PDF with mAP table and per-class confusion.<br>
+    <strong>Pre-reading:</strong> <a href="../tutorials/yolo-darknet.html#section-5">"Training your
+    own YOLO" section of the YOLO tutorial</a>.
+  </div>
+
+  <h2>Biological motivation</h2>
+  <p>MegaDetector tells you <em>where</em> animals are, not <em>what</em> they are. For most field
+    questions you need species ID. Fine-tuning YOLO directly on labeled crops is one of two
+    common approaches (the other is "detect then classify", which is Lab 5). This lab teaches
+    you how to read a training run, recognize overfitting, and produce defensible per-class
+    performance numbers.</p>
+
+  <h2>Data</h2>
+  <div class="callout tip"><strong>Get the data:</strong> <a href="../downloads/aiecol_cameratraps.zip">aiecol_cameratraps.zip (297 MB)</a> &mdash; or the full bundle <a href="../downloads/aiecol_data_sample.zip">aiecol_data_sample.zip (395 MB)</a>. See the <a href="../downloads/index.html">downloads page</a> for layout.</div>
+  <p>A 4-class subset of Oregon Critters built from the
+    <code>data_sample/</code> teaching set. The
+    <a href="../code/cameratraps/train_oregon_critters.py">build script</a>
+    converts the COCO-style CSV into YOLO format:</p>
+  <pre><code>oregon_critters_4cls/
+├── images/{train, val}/
+├── labels/{train, val}/
+└── data.yaml         # classes:
+                     #   0 = black-tailed deer
+                     #   1 = roosevelt elk
+                     #   2 = black bear
+                     #   3 = bobcat</code></pre>
+  <p>~120 train, ~30 val in the course sample (we use the 4 mammal species that
+    have enough crops). <strong>Class balance is intentionally uneven</strong>
+    (deer most common, bobcat fewest) &mdash; this is realistic and you'll need
+    to deal with it. A full Oregon Critters run from LILA would scale to
+    ~1,200 training images for the same classes.</p>
+
+  <h2>Tasks</h2>
+
+  <h3>Task 1 &mdash; baseline train (5 pts)</h3>
+  <p>Use <a href="../code/cameratraps/train_oregon_critters.py">train_oregon_critters.py</a> as-is
+    (50 epochs, YOLOv8s, default augmentation). Report:</p>
+  <ul>
+    <li>Final mAP@0.5 and mAP@0.5:0.95.</li>
+    <li>Per-class precision, recall, AP@0.5.</li>
+    <li>The confusion matrix.</li>
+  </ul>
+
+  <h3>Task 2 &mdash; class imbalance experiment (5 pts)</h3>
+  <p>Bobcat is the rarest class in the course sample and will probably be the
+    worst-performing. Use Ultralytics' <code>class_weights</code> argument (or
+    oversample bobcat crops in your training labels) to upweight the rare
+    classes. Retrain. Compare to the baseline. Did bobcat recall improve? At
+    what cost to deer precision?</p>
+
+  <h3>Task 3 &mdash; site-stratified eval (5 pts)</h3>
+  <p>The val set in <code>data.yaml</code> is a random split, which <em>overestimates</em> how well
+    your model will work at a new camera. Create a second val set where the held-out sites are
+    completely separate cameras (use <code>val_by_site.yaml</code> provided). Re-evaluate. How
+    much does mAP drop? Report both numbers.</p>
+
+  <div class="callout note">
+    This is one of the most important and most overlooked points in applied CV for ecology.
+    Random-split metrics flatter your model; site-held-out metrics tell you what to expect at the
+    next deployment. Both go in your paper, with the held-out number as the headline.
+  </div>
+
+  <h3>Task 4 &mdash; interpretation (5 pts)</h3>
+  <p>In 200 words: discuss the random-split vs site-held-out gap, and the class-imbalance
+    tradeoff. What would you recommend to the project lead about deploying this model?</p>
+
+  <h2>Go-further</h2>
+  <p>Try <code>yolov8m</code> instead of <code>yolov8s</code>. Does the bigger model help, or does
+    it just overfit faster on this dataset size? Show the val curves of both.</p>
+
+  <h2>Rubric</h2>
+  <table>
+    <tr><th>Component</th><th>Points</th></tr>
+    <tr><td>Baseline training run with all required metrics</td><td>6</td></tr>
+    <tr><td>Class-imbalance experiment with comparison</td><td>4</td></tr>
+    <tr><td>Site-held-out evaluation</td><td>4</td></tr>
+    <tr><td>Interpretation with deployment recommendation</td><td>6</td></tr>
+    <tr><th>Total</th><th>20</th></tr>
+  </table>
+
+  <footer>Lab 4 &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

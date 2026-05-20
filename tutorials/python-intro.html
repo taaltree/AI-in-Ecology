@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Python Crash Course · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="python-intro.html" class="current">Python Crash Course</a>
+    <a href="environments.html">Python Environments &amp; Conda</a>
+    <a href="pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="claude-code.html">Claude Code Setup</a>
+    <a href="claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="../labs/lab1.html">Lab 1 · Python</a>
+    <a href="../labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="../labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="../labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="../labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="../labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="../labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="../labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="../labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="../labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="../labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Python Crash Course for Ecologists</h1>
+  <p class="lead">Enough Python to read the code in this course, modify it, and debug it when it
+    breaks. You will not be asked to write programs from scratch.</p>
+
+  <h2>0. Install everything</h2>
+  <p>Before Day 1 you need a working Python <em>environment</em>. If the word
+    "environment" makes you nervous, read the
+    <a href="environments.html">Python Environments &amp; Conda tutorial</a> first
+    &mdash; it explains <em>why</em> we use envs and walks through Miniforge install,
+    activation, and the one-time creation of the course's <code>aiecol</code> env in
+    much more detail than this section. The blocks below are the short version.</p>
+
+  <h3>macOS</h3>
+  <pre><code># Install Homebrew if you don't have it.
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install Miniforge (conda + mamba) and a few system tools.
+brew install --cask miniforge
+brew install git ffmpeg
+
+# Set up conda for your shell (one-time)
+conda init zsh
+# Close and reopen your terminal.
+
+# Create the course environment (see the environments tutorial for what's happening).
+mamba create -n aiecol -c conda-forge python=3.11 sox ffmpeg -y
+conda activate aiecol
+pip install jupyterlab numpy pandas matplotlib scikit-learn torch torchvision \
+            ultralytics opencv-python soundfile librosa</code></pre>
+
+  <h3>Windows</h3>
+  <pre><code># Open PowerShell and install via winget.
+winget install Git.Git
+winget install CondaForge.Miniforge3
+
+# Open a NEW "Miniforge Prompt" (Start Menu) — or restart PowerShell after
+# `conda init powershell`. Then:
+mamba create -n aiecol -c conda-forge python=3.11 sox ffmpeg -y
+conda activate aiecol
+pip install jupyterlab numpy pandas matplotlib scikit-learn torch torchvision `
+            ultralytics opencv-python soundfile librosa</code></pre>
+
+  <div class="callout tip">
+    <strong>GPU note:</strong> if you have an NVIDIA GPU on Windows or Linux, replace the
+    <code>torch torchvision</code> line with the version from
+    <a href="https://pytorch.org/get-started/locally/">pytorch.org/get-started/locally</a> that
+    matches your CUDA version. On Apple Silicon the default <code>pip install torch</code> uses the
+    GPU automatically through MPS.
+  </div>
+
+  <h2>1. Running Python</h2>
+  <p>You will use three things:</p>
+  <ul>
+    <li><strong>Jupyter Lab</strong> for exploration. Run <code>jupyter lab</code> in a terminal
+      with the <code>aiecol</code> env active and a browser tab opens.</li>
+    <li><strong>VS Code</strong> for editing scripts. Install the "Python" and "Jupyter"
+      extensions from Microsoft.</li>
+    <li><strong>The terminal</strong> for running long scripts: <code>python train.py</code>.</li>
+  </ul>
+
+  <h2>2. The minimum Python you need</h2>
+
+  <h3>Variables, lists, dicts</h3>
+  <pre><code># Numbers, strings, and booleans
+n_cameras = 24
+species = "Odocoileus hemionus"
+is_endangered = False
+
+# Lists: ordered, can be modified
+sites = ["Crater_Lake_A", "Crater_Lake_B", "Mt_Hood_01"]
+sites.append("Mt_Hood_02")
+print(sites[0])     # "Crater_Lake_A"
+print(len(sites))   # 4
+
+# Dicts: key-value pairs (your most useful data structure)
+detection = {
+    "image": "IMG_0042.JPG",
+    "species": "deer",
+    "confidence": 0.87,
+    "bbox": [120, 230, 540, 720],   # x1, y1, x2, y2
+}
+print(detection["species"])         # "deer"</code></pre>
+
+  <h3>Loops, conditions, functions</h3>
+  <pre><code>for site in sites:
+    print(f"Processing {site}")
+
+# A function — wrap any logic you'll use twice
+def is_high_confidence(det, threshold=0.7):
+    """Return True if the detection is above the confidence threshold."""
+    return det["confidence"] &gt;= threshold
+
+if is_high_confidence(detection):
+    print("Keep this one")</code></pre>
+
+  <h3>Reading files</h3>
+  <pre><code>from pathlib import Path
+
+# Walking a directory of camera-trap images
+image_dir = Path("/Users/you/oregon_critters/images")
+for img_path in image_dir.glob("**/*.JPG"):
+    print(img_path.name, img_path.stat().st_size)</code></pre>
+
+  <h2>3. NumPy &mdash; arrays of numbers</h2>
+  <p>NumPy is the foundation of everything else (PyTorch, OpenCV, librosa). Arrays are like R
+    vectors / matrices, but with dimensions explicit.</p>
+  <pre><code>import numpy as np
+
+counts = np.array([3, 7, 0, 12, 2, 5])
+print(counts.mean())   # 4.83
+print(counts.sum())    # 29
+print(counts[counts &gt; 3])  # [ 7 12  5]
+
+# A grayscale image is just a 2-D array of pixel values 0-255
+img = np.zeros((480, 640), dtype=np.uint8)  # all-black 480x640 image
+img[100:200, 200:300] = 255                 # paint a white rectangle</code></pre>
+
+  <h2>4. pandas &mdash; tabular data</h2>
+  <p>If you know R's <code>data.frame</code>, you know pandas. A <code>DataFrame</code> is rows and
+    columns with labels.</p>
+  <pre><code>import pandas as pd
+
+# Read a camera-trap detection CSV
+df = pd.read_csv("detections.csv")
+print(df.head())
+print(df["species"].value_counts())   # how many of each species?
+
+# Filter to high-confidence deer
+deer = df[(df["species"] == "deer") &amp; (df["confidence"] &gt; 0.7)]
+
+# Group by site and count
+by_site = df.groupby("site").size().reset_index(name="n_detections")
+by_site.to_csv("per_site_counts.csv", index=False)</code></pre>
+
+  <h2>5. matplotlib &mdash; plots</h2>
+  <pre><code>import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.bar(by_site["site"], by_site["n_detections"])
+ax.set_ylabel("Number of detections")
+ax.set_title("Detections per site")
+plt.xticks(rotation=45, ha="right")
+plt.tight_layout()
+plt.savefig("detections_per_site.png", dpi=150)
+plt.show()</code></pre>
+
+  <h2>6. Reading EXIF timestamps from a camera-trap photo</h2>
+  <p>You'll need this in Lab 1 to bin detections by hour of day.</p>
+  <pre><code>from PIL import Image, ExifTags
+from datetime import datetime
+
+def read_timestamp(path):
+    """Return a datetime from a camera-trap JPEG's EXIF DateTimeOriginal field."""
+    img = Image.open(path)
+    exif = {ExifTags.TAGS.get(k): v for k, v in (img._getexif() or {}).items()}
+    raw = exif.get("DateTimeOriginal")    # "2023:07:14 06:21:43"
+    if raw is None:
+        return None
+    return datetime.strptime(raw, "%Y:%m:%d %H:%M:%S")
+
+ts = read_timestamp("IMG_0042.JPG")
+print(ts.hour)   # e.g. 6 → dawn</code></pre>
+
+  <h2>7. Common errors and what they mean</h2>
+  <table>
+    <tr><th>Error</th><th>What it usually means</th></tr>
+    <tr><td><code>ModuleNotFoundError</code></td>
+        <td>The package isn't installed in this env. Run <code>conda activate aiecol</code> first,
+        then <code>pip install &lt;name&gt;</code>.</td></tr>
+    <tr><td><code>IndentationError</code></td>
+        <td>You mixed tabs and spaces, or your indentation is uneven. Always use 4 spaces.</td></tr>
+    <tr><td><code>KeyError: 'species'</code></td>
+        <td>The dict or DataFrame doesn't have that column. Print the keys/columns first to check.</td></tr>
+    <tr><td><code>CUDA out of memory</code></td>
+        <td>Your GPU ran out of RAM. Lower the batch size, or run with <code>device='cpu'</code>.</td></tr>
+  </table>
+
+  <h2>8. Where to go for help</h2>
+  <ul>
+    <li>Built-in: in Jupyter, type <code>pd.read_csv?</code> and shift-enter to see the docstring.</li>
+    <li><a href="https://realpython.com/">RealPython</a> for friendly long-form tutorials.</li>
+    <li>Claude Code &mdash; ask <em>"explain what this error means and how I'd fix it"</em>, pasting
+      the full traceback. (See <a href="claude-code-best-practices.html">Claude Code dos &amp;
+      don'ts</a>.)</li>
+  </ul>
+
+  <p><a href="../labs/lab1.html">→ Continue to Lab 1: Python warm-up on camera-trap metadata</a></p>
+
+  <footer>Python crash course &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

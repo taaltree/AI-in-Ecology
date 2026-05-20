@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YOLO &amp; Darknet · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="python-intro.html">Python Crash Course</a>
+    <a href="environments.html">Python Environments &amp; Conda</a>
+    <a href="pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="yolo-darknet.html" class="current">YOLO &amp; Darknet</a>
+    <a href="bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="claude-code.html">Claude Code Setup</a>
+    <a href="claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="../labs/lab1.html">Lab 1 · Python</a>
+    <a href="../labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="../labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="../labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="../labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="../labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="../labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="../labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="../labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="../labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="../labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>YOLO &amp; Darknet for Camera Traps</h1>
+  <p class="lead">A working understanding of what YOLO does, how Darknet relates to it, and how to
+    run, train, and use both for camera-trap detection and classification.</p>
+
+  <h2>1. What YOLO is, in one paragraph</h2>
+  <p>YOLO ("You Only Look Once") is a family of single-stage object detectors. Where older
+    detectors (R-CNN, Faster R-CNN) first proposed regions and then classified them, YOLO does both
+    in a single forward pass through a convolutional network. The image is divided into a grid; at
+    each grid cell, the network predicts (a) a small number of bounding boxes, (b) their objectness
+    scores, and (c) a class probability vector. This makes YOLO fast enough to run in real time on
+    a laptop GPU, which is why it dominates camera-trap pipelines.</p>
+
+  <h2>2. YOLO vs Darknet vs Ultralytics &mdash; what is what?</h2>
+  <table>
+    <tr><th>Name</th><th>What it is</th><th>Use it for</th></tr>
+    <tr><td><strong>Darknet</strong></td>
+        <td>The original C/CUDA training framework written by Joseph Redmon and extended by
+        AlexeyAB. Backs YOLOv1&ndash;v4.</td>
+        <td>Reproducing older camera-trap papers (e.g., many MegaDetector v3 / v4 variants).</td></tr>
+    <tr><td><strong>Ultralytics YOLO</strong></td>
+        <td>A PyTorch-based reimplementation, currently at YOLOv8 / YOLO11. Much friendlier API.</td>
+        <td>What we'll use for almost everything in this course.</td></tr>
+    <tr><td><strong>MegaDetector</strong></td>
+        <td>A YOLOv5-trained model for 3 classes: animal, person, vehicle. Excellent on camera
+        traps worldwide.</td>
+        <td>Always run first on a new camera-trap dataset &mdash; gives you a strong baseline before
+        you train anything custom.</td></tr>
+  </table>
+
+  <div class="callout tip">
+    For this course you don't need to compile Darknet from source. We'll use the Darknet weights
+    through Ultralytics or through the <code>megadetector</code> Python package. The Day-2 lecture
+    will demo a Darknet build for those who care.
+  </div>
+
+  <h2>3. Installing Ultralytics</h2>
+  <pre><code>pip install ultralytics
+# Verify
+yolo checks</code></pre>
+
+  <h2>4. Inference: run a pretrained detector in 3 lines</h2>
+  <p>The Ultralytics CLI is the fastest way to detect:</p>
+  <pre><code># Use YOLOv8n (nano, fast) on a folder of Oregon Critters images
+yolo detect predict \
+     model=yolov8n.pt \
+     source=/data/oregon_critters/images/site_A \
+     conf=0.25 \
+     save=True \
+     project=runs save_dir=site_A</code></pre>
+
+  <p>You'll see annotated images in <code>runs/site_A/</code>. To do the same thing in Python &mdash;
+    and capture the results as structured data &mdash; use the API:</p>
+
+  <h3>Annotated detection script</h3>
+  <pre><code>"""
+detect_oregon_critters.py
+
+Run a pretrained YOLO model on every image in a directory and write
+a tidy CSV of detections that can be merged with site metadata.
+
+Usage:
+    python detect_oregon_critters.py \
+        --images /data/oregon_critters/images/site_A \
+        --out    site_A_detections.csv \
+        --model  yolov8n.pt \
+        --conf   0.25
+"""
+import argparse
+import csv
+from pathlib import Path
+from ultralytics import YOLO
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--images", required=True, help="Directory of .JPG files")
+    p.add_argument("--out",    required=True, help="Output CSV path")
+    p.add_argument("--model",  default="yolov8n.pt",
+                   help="Path or name of YOLO weights")
+    p.add_argument("--conf",   type=float, default=0.25,
+                   help="Minimum confidence to keep a detection")
+    args = p.parse_args()
+
+    # Loads the weights once; downloads from Ultralytics if it's a known name.
+    model = YOLO(args.model)
+
+    # Stream=True yields one Result per image without loading them all into RAM.
+    image_paths = sorted(Path(args.images).glob("**/*.JPG"))
+    print(f"Found {len(image_paths)} images")
+
+    with open(args.out, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["image", "class_id", "class_name",
+                         "confidence", "x1", "y1", "x2", "y2"])
+
+        for result in model.predict(source=image_paths,
+                                    conf=args.conf,
+                                    stream=True,
+                                    verbose=False):
+            # result.boxes is a tensor of detections for this image.
+            # Each row: [x1, y1, x2, y2, conf, class_id]
+            img_name = Path(result.path).name
+            for box in result.boxes:
+                cls_id = int(box.cls.item())
+                cls_nm = model.names[cls_id]
+                xy     = box.xyxy[0].tolist()
+                writer.writerow([img_name, cls_id, cls_nm,
+                                 round(box.conf.item(), 3),
+                                 *[round(v, 1) for v in xy]])
+
+    print(f"Wrote detections to {args.out}")
+
+if __name__ == "__main__":
+    main()</code></pre>
+
+  <h2>5. Training your own YOLO</h2>
+  <p>Ultralytics expects this folder layout:</p>
+  <pre><code>oregon_critters_yolo/
+├── images/
+│   ├── train/        # 80% of your JPEGs
+│   └── val/          # 20%
+├── labels/
+│   ├── train/        # one .txt per image, same basename
+│   └── val/
+└── data.yaml         # the dataset descriptor</code></pre>
+
+  <p>Each <code>.txt</code> label file has one line per object, normalized to image dimensions:</p>
+  <pre><code># class_id  x_center  y_center  width  height   (all in [0, 1])
+0  0.512  0.443  0.180  0.260
+2  0.760  0.522  0.140  0.310</code></pre>
+
+  <p>And <code>data.yaml</code> looks like:</p>
+  <pre><code>path: /data/oregon_critters_yolo
+train: images/train
+val:   images/val
+names:
+  0: deer
+  1: black_bear
+  2: cougar
+  3: coyote</code></pre>
+
+  <h3>Training script (annotated)</h3>
+  <pre><code>"""
+train_oregon_critters.py
+
+Fine-tune YOLOv8 on a 4-class Oregon Critters subset.
+Designed to run on a single GPU in ~30 minutes for the small subset
+used in Lab 4.
+"""
+from ultralytics import YOLO
+
+# Start from yolov8s.pt (small) rather than nano — the species discrimination
+# task benefits noticeably from extra capacity, and it still trains fast.
+model = YOLO("yolov8s.pt")
+
+# A single .train() call kicks off the entire pipeline:
+#   - sets up the optimizer (AdamW by default)
+#   - reads data.yaml
+#   - builds the train/val DataLoaders with built-in augmentation
+#   - runs the epoch loop, logging mAP@0.5 and mAP@0.5:0.95
+#   - saves the best checkpoint to runs/detect/&lt;name&gt;/weights/best.pt
+results = model.train(
+    data="oregon_critters_yolo/data.yaml",
+    epochs=50,
+    imgsz=640,             # input resolution; bigger = slower but better small-animal recall
+    batch=16,              # drop to 8 if you OOM
+    patience=10,           # early-stop if val mAP stalls
+    name="oregon_critters_v1",
+    pretrained=True,       # we ARE fine-tuning, not training from scratch
+    optimizer="AdamW",
+    cos_lr=True,           # cosine LR schedule helps for small datasets
+    augment=True,          # mosaic + flips + HSV; turn off near end if overfitting
+    seed=42,               # reproducibility
+)
+
+# Evaluate on the val set with the best checkpoint
+metrics = model.val()
+print("mAP@0.5    :", round(metrics.box.map50, 3))
+print("mAP@0.5:.95:", round(metrics.box.map, 3))</code></pre>
+
+  <h2>6. Reading training curves honestly</h2>
+  <ul>
+    <li><strong>train/box_loss</strong> should fall and then plateau. If it's still falling at the
+      last epoch you stopped too early.</li>
+    <li><strong>val/box_loss</strong> should track training loss for a while, then start to rise.
+      That rise is overfitting &mdash; take the checkpoint from before the rise (Ultralytics calls
+      this <code>best.pt</code> automatically).</li>
+    <li><strong>mAP@0.5</strong> is the friendliest metric to report to non-ML colleagues, but
+      <strong>mAP@0.5:0.95</strong> is the standard for papers.</li>
+    <li>Look at <code>confusion_matrix.png</code> in the run directory &mdash; if cougar and bobcat
+      are getting confused with each other but everything else is fine, you have a clear story to
+      tell.</li>
+  </ul>
+
+  <h2>7. Classification on detected crops</h2>
+  <p>For fine-grained species ID, a common pattern is "detect with MegaDetector then classify the
+    crops". You can do this in Ultralytics by using a classification model on the cropped
+    detections from a detection model.</p>
+
+  <pre><code>"""
+classify_crops.py
+
+Pipe: detector finds animals; classifier names them.
+"""
+from ultralytics import YOLO
+from PIL import Image
+
+det = YOLO("yolov8n.pt")                       # generic animal detector
+cls = YOLO("oregon_critters_cls/best.pt")      # YOUR fine-tuned classifier
+
+for result in det.predict(source="data/site_B", stream=True, conf=0.3):
+    img = Image.open(result.path).convert("RGB")
+    for box in result.boxes:
+        x1, y1, x2, y2 = [int(v) for v in box.xyxy[0].tolist()]
+        crop = img.crop((x1, y1, x2, y2))
+        c = cls.predict(crop, verbose=False)[0]
+        species = cls.names[int(c.probs.top1)]
+        confidence = float(c.probs.top1conf)
+        print(result.path, species, round(confidence, 2), [x1, y1, x2, y2])</code></pre>
+
+  <h2>8. The Darknet route (for the curious)</h2>
+  <p>If you need to read or reproduce a paper that used Darknet directly:</p>
+  <pre><code># Clone AlexeyAB's maintained fork
+git clone https://github.com/AlexeyAB/darknet.git
+cd darknet
+
+# Edit Makefile: set GPU=1 CUDNN=1 OPENCV=1 if you have CUDA installed,
+# otherwise leave defaults for CPU-only.
+make -j8
+
+# Download YOLOv4 weights
+wget https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights
+
+# Run detection on one image
+./darknet detector test cfg/coco.data cfg/yolov4.cfg yolov4.weights \
+    -ext_output predictions.jpg
+# (predictions.jpg is written; bounding boxes are also printed to stdout)</code></pre>
+
+  <p>Darknet training uses an <code>obj.data</code> file pointing to <code>train.txt</code> and
+    <code>valid.txt</code> &mdash; the same idea as Ultralytics' <code>data.yaml</code>, just less
+    polished. For new work you should prefer Ultralytics; for old papers, Darknet is fine.</p>
+
+  <h2>9. Evaluation metrics, briefly</h2>
+  <table>
+    <tr><th>Metric</th><th>What it tells you</th><th>What it hides</th></tr>
+    <tr><td>Precision</td><td>Of the boxes I called positive, how many were right?</td>
+        <td>Doesn't penalize missed animals.</td></tr>
+    <tr><td>Recall</td><td>Of all the real animals, how many did I find?</td>
+        <td>Doesn't penalize false alarms.</td></tr>
+    <tr><td>mAP@0.5</td><td>Average precision averaged over classes, treating a box as correct
+        if IoU&ge;0.5 with truth.</td><td>Insensitive to localization fineness.</td></tr>
+    <tr><td>mAP@0.5:0.95</td><td>Same but averaged over IoU thresholds 0.5, 0.55, ..., 0.95.</td>
+        <td>Harder to interpret; standard in papers.</td></tr>
+  </table>
+
+  <p><a href="../labs/lab3.html">→ Continue to Lab 3: Run YOLO on Oregon Critters</a></p>
+
+  <footer>YOLO &amp; Darknet tutorial &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

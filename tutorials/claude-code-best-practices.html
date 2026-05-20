@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Claude Code: Dos &amp; Don'ts · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="python-intro.html">Python Crash Course</a>
+    <a href="environments.html">Python Environments &amp; Conda</a>
+    <a href="pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="claude-code.html">Claude Code Setup</a>
+    <a href="claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="claude-code-best-practices.html" class="current">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="../labs/lab1.html">Lab 1 · Python</a>
+    <a href="../labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="../labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="../labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="../labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="../labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="../labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="../labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="../labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="../labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="../labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Claude Code: Dos and Don'ts</h1>
+  <p class="lead">How to get the most out of Claude Code for scientific work &mdash; and a hard list
+    of the things that will get you wrong answers, retracted papers, or both.</p>
+
+  <h2>Part 1 &mdash; Dos</h2>
+
+  <div class="callout do">
+    <h4>1. Start in plan mode for anything non-trivial.</h4>
+    Press <span class="kbd">Shift</span>+<span class="kbd">Tab</span> until "plan mode" appears, or
+    type <code>/plan</code>. A 30-second plan review catches wrong approaches before they cost
+    you an hour of code. Make this a habit for all simulations, model fits, and report drafts.
+  </div>
+
+  <div class="callout do">
+    <h4>2. Tell Claude what success looks like, not just what to do.</h4>
+    Worse: <em>"Fit an occupancy model."</em><br>
+    Better: <em>"Fit a single-season occupancy model in <code>unmarked</code> with
+    <code>elevation + ndvi</code> on occupancy and <code>effort</code> on detection. Print a tidy
+    coefficient table and a parametric-bootstrap goodness-of-fit p-value. Save the model object
+    to <code>models/occu_v1.rds</code>."</em>
+  </div>
+
+  <div class="callout do">
+    <h4>3. Maintain a <code>CLAUDE.md</code> at the project root.</h4>
+    Record your data layout, conventions, known issues, and decisions. Claude reads this
+    automatically. Updating it once saves dozens of "let me remind you..." turns later.
+  </div>
+
+  <div class="callout do">
+    <h4>4. Ask Claude to simulate first, fit second.</h4>
+    Before any real-data analysis, ask Claude to (a) simulate data under the model you plan to
+    fit, with known parameters, and (b) refit and check that you recover them. This catches
+    parameterization bugs that would otherwise corrupt your results. (This is Lab 9.)
+  </div>
+
+  <div class="callout do">
+    <h4>5. Ask for tests, not just code.</h4>
+    "Write <code>process_detections.py</code> <em>and</em> a <code>test_process_detections.py</code>
+    with at least three unit tests, including one for the case of an image with no detections."
+    Tests make your code robust to Claude (or you) silently changing behavior later.
+  </div>
+
+  <div class="callout do">
+    <h4>6. Use version control. Commit before and after a Claude session.</h4>
+    <code>git init</code>, then <code>git add -A &amp;&amp; git commit -m "before claude"</code>
+    every time you start. If a session goes sideways, <code>git diff</code> shows you exactly what
+    changed and <code>git restore</code> rolls it back.
+  </div>
+
+  <div class="callout do">
+    <h4>7. Make Claude show you its work.</h4>
+    "After fitting the model, print (i) the data dimensions you used, (ii) the formula you fit,
+    (iii) the coefficient table, and (iv) the random seed." A model that "ran" but whose inputs
+    you can't recite is a model you can't defend in a manuscript.
+  </div>
+
+  <div class="callout do">
+    <h4>8. Split a long task into checkpoints.</h4>
+    For a multi-day analysis: ask Claude to do step 1, review, commit. Then step 2. A 3-hour
+    autonomous session that produces 800 lines of code is almost always worse than three 1-hour
+    sessions producing 250 lines each, because you can sanity-check between them.
+  </div>
+
+  <div class="callout do">
+    <h4>9. Paste the exact error, not your paraphrase.</h4>
+    "I get an error in line 42" wastes turns. Paste the full traceback. Claude is very good at
+    reading tracebacks.
+  </div>
+
+  <div class="callout do">
+    <h4>10. Use <code>/clear</code> when you change topic.</h4>
+    A 100-message context where you went from data cleaning to model fitting to manuscript drafting
+    will make Claude slower and more confused. Clear the context, summarise the state of the
+    project in one paragraph, and start fresh.
+  </div>
+
+  <h2>Part 2 &mdash; Don'ts</h2>
+
+  <div class="callout dont">
+    <h4>1. Don't trust statistical model output you haven't validated.</h4>
+    Claude will <em>cheerfully</em> write a 200-line Stan model that "converges". That doesn't make
+    it correct. For any statistical conclusion you will publish: simulate, recover parameters,
+    write down what the model assumes, and check it.
+  </div>
+
+  <div class="callout dont">
+    <h4>2. Don't paste sensitive data.</h4>
+    Camera-trap GPS coordinates of endangered species, tribal partner data, embargoed datasets &mdash;
+    treat anything you send to a cloud model as if it could be logged. If you must process such
+    data, run Claude Code against local files (it does not upload them unless you explicitly
+    attach them to a message).
+  </div>
+
+  <div class="callout dont">
+    <h4>3. Don't let Claude pick the statistical method for you.</h4>
+    If you ask <em>"How should I analyze this?"</em> Claude will pick something plausible-sounding.
+    It will not always be the right thing for your sampling design. Decide the method <em>yourself</em>
+    (from your training, an advisor, or a textbook), then have Claude implement it.
+  </div>
+
+  <div class="callout dont">
+    <h4>4. Don't accept the first answer to a numeric question.</h4>
+    <em>"How many species are in this CSV?"</em> &rarr; Claude says 47. Verify in your own head or
+    with one line of code. The hardest mistakes to catch are the ones that look right.
+  </div>
+
+  <div class="callout dont">
+    <h4>5. Don't submit AI-generated scientific writing verbatim.</h4>
+    You're a scientist, and your conclusions in a manuscript must be in your own voice. Claude can
+    edit your prose for clarity &mdash; that's fine, that's just a copy editor. It should not draft
+    the interpretation of your results for you.
+  </div>
+
+  <div class="callout dont">
+    <h4>6. Don't give Claude blanket Bash permissions.</h4>
+    The convenience of approving <code>Bash(*)</code> is real. So is the day Claude misreads your
+    intent and runs <code>rm -rf data/</code>. Approve narrow command classes (see the
+    <a href="claude-code.html#section-6">setup tutorial</a>).
+  </div>
+
+  <div class="callout dont">
+    <h4>7. Don't ignore "I can't find that file" or "I'm not sure".</h4>
+    When Claude expresses uncertainty, take it seriously. The failure mode is not that it stops
+    &mdash; it's that it guesses. If it's not sure where <code>detections.csv</code> lives, tell it
+    explicitly. Don't let it pick a random CSV that happens to be nearby.
+  </div>
+
+  <div class="callout dont">
+    <h4>8. Don't use Claude as a citation generator.</h4>
+    Claude will produce confidently formatted references that do not exist. If you need a citation,
+    look it up yourself (Web of Science, Google Scholar, your reference manager). Use Claude to
+    <em>find candidate keywords</em> and to format already-real citations into BibTeX.
+  </div>
+
+  <div class="callout dont">
+    <h4>9. Don't ask Claude to "make the model fit better".</h4>
+    This is how p-hacking happens. If a model doesn't fit, the answer is to (a) check assumptions,
+    (b) report the fit honestly, (c) try a different model with a written-down justification &mdash;
+    not to keep tweaking until something is below 0.05.
+  </div>
+
+  <div class="callout dont">
+    <h4>10. Don't treat a passing run as a passing analysis.</h4>
+    Code that runs without errors is the lowest bar. Code that does the right thing on data it
+    hasn't seen, with the right assumptions, and produces results that match a simulation &mdash;
+    that's a passing analysis. Always ask: <em>"How would I know if this were silently wrong?"</em>
+  </div>
+
+  <h2>Worked example: prompt rewriting</h2>
+  <p>A bad prompt and a good one for the same task.</p>
+
+  <div class="callout dont">
+    <h4>Bad</h4>
+    <em>"Use the camera trap data to figure out which species use the trail more at night."</em><br>
+    <small>Why it's bad: doesn't say where the data is, what "use" means, what "night" means, how
+    to handle multiple detections of the same animal, what output is expected, what to test.</small>
+  </div>
+
+  <div class="callout do">
+    <h4>Good</h4>
+    <em>"In this project, <code>data/detections.csv</code> has columns
+    <code>image, datetime, species, confidence, site</code>. For each of the 6 species with &ge;100
+    detections, compute the fraction of detections occurring between sunset and sunrise (use
+    <code>astral</code> with site coordinates from <code>data/sites.csv</code>). Aggregate
+    detections within 60-minute windows per site so we're not double-counting one animal lingering.
+    Output a tidy CSV <code>results/nocturnality.csv</code> with columns
+    <code>species, n_indep_detections, frac_nocturnal, ci_lo, ci_hi</code>, with 95% CIs from a
+    binomial likelihood. Plot a forest plot to <code>figures/nocturnality.png</code>. Use the
+    R packages we have in <code>CLAUDE.md</code>; if you need a new one, ask first."</em>
+  </div>
+
+  <h2>A short checklist before you call an analysis done</h2>
+  <ol>
+    <li>Can I describe, in one sentence, what model was fit and to what data?</li>
+    <li>Did I simulate from this model and recover the parameters?</li>
+    <li>Did I write down the assumptions and check the ones I can?</li>
+    <li>If I removed the AI from the loop today, could I re-run this analysis tomorrow?</li>
+    <li>Have I disclosed where I used AI in the manuscript or report?</li>
+  </ol>
+
+  <p>If all five are <strong>yes</strong>, you're using Claude Code well.</p>
+
+  <footer>Claude Code dos &amp; don'ts &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Final Project · AI in Ecology</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="index.html">Syllabus &amp; Home</a>
+    <a href="schedule.html">Full Schedule</a>
+    <a href="lectures/index.html">Lecture Slides</a>
+    <a href="downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="final-project.html" class="current">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="tutorials/python-intro.html">Python Crash Course</a>
+    <a href="tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="labs/lab1.html">Lab 1 · Python</a>
+    <a href="labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Final Project (50 points)</h1>
+
+  <p class="lead">A small, end-to-end research project that uses something from the course to
+    answer a focused biological or methodological question. Done individually or in pairs.</p>
+
+  <h2>Format</h2>
+  <ul>
+    <li><strong>Code:</strong> a tidy project directory (zipped or GitHub link) including
+      <code>CLAUDE.md</code>, <code>prompts.md</code>, and a single command to reproduce all
+      results.</li>
+    <li><strong>Report:</strong> 4&ndash;6 pages PDF in standard manuscript format
+      (intro, methods, results, discussion, tools-used appendix).</li>
+    <li><strong>One figure</strong> in the report must be a parameter-recovery or assumption-stress
+      simulation (Lab 9/10 style) supporting your headline result.</li>
+  </ul>
+
+  <h2>Timeline</h2>
+  <table>
+    <tr><th>When</th><th>What</th></tr>
+    <tr><td>End of Day 5</td><td>Verbal pitch (3 min, in class) of your topic.</td></tr>
+    <tr><td>Day +3 (post-course)</td><td>1-paragraph written proposal due via Slack.</td></tr>
+    <tr><td>Day +14</td><td>Code + report due, 23:59 your local time.</td></tr>
+    <tr><td>Day +21</td><td>Grades returned with comments.</td></tr>
+  </table>
+
+  <h2>Choose your track</h2>
+
+  <h3>Track 1 &mdash; Camera-trap</h3>
+  <p>Suggested questions:</p>
+  <ul>
+    <li>How much does between-site classifier accuracy variation bias an occupancy estimate of
+      a focal Oregon Critters species? Quantify with simulation + a real run.</li>
+    <li>Build a "rare class" pipeline: fine-tune a detector for fishers or martens (rare in the
+      Oregon Critters dataset), evaluate site-held-out, propose a deployment strategy.</li>
+    <li>Compare three image classifiers (your Lab 5 ResNet, a CLIP zero-shot baseline,
+      MegaDetector species-classifier) on the same 8-class problem.</li>
+  </ul>
+
+  <h3>Track 2 &mdash; Bioacoustic</h3>
+  <p>Suggested questions:</p>
+  <ul>
+    <li>Build a calibrated BirdNET species-list pipeline for a 30-day deployment from a public
+      dataset (Xeno-canto soundscapes, or the dawn-chorus data from Lab 6 extended). Quantify
+      false-positive rates per species.</li>
+    <li>Train a custom acoustic classifier for a target outside PNW-Cnet's vocabulary (e.g.,
+      mountain quail covey call) and benchmark vs PNW-Cnet's nearest-class fallback.</li>
+    <li>Combine BirdNET detections with covariates to fit a single-season acoustic occupancy
+      model for one species, with all the calibration steps from Labs 6 and 10.</li>
+  </ul>
+
+  <h3>Track 3 &mdash; Modeling-with-Claude-Code</h3>
+  <p>Suggested questions:</p>
+  <ul>
+    <li>Pick a published F&amp;W estimator (CJS, Pradel, integrated population model, distance
+      sampling, spatial capture-recapture). With Claude Code, write the simulator, fit the
+      published estimator, demonstrate unbiased recovery, then break one assumption and quantify
+      the bias. Write it up like a methods note.</li>
+    <li>Build a population viability analysis for a species of management concern. The PVA must
+      include a sensitivity analysis (which life-stage parameters matter most?) and a clearly
+      defined "what counts as recovery" criterion.</li>
+    <li>Reproduce the analysis from a recent F&amp;W paper in your area of interest, with Claude
+      Code as your assistant. Report what was easy and what was hard, and any places where your
+      results differed.</li>
+  </ul>
+
+  <h3>Track 4 &mdash; Combined</h3>
+  <p>End-to-end project: detect &rarr; classify &rarr; aggregate into a tidy CSV &rarr; fit an
+    ecological model &rarr; report results, with appropriate calibration of the CV model's error
+    propagated into the statistical model. This is the most realistic, the most ambitious, and the
+    highest-ceiling of the four tracks.</p>
+
+  <h2>Rubric (50 points)</h2>
+  <table>
+    <tr><th>Component</th><th>Points</th></tr>
+    <tr><td><strong>Biological framing.</strong> Is the question well-posed? Is the answer
+        meaningful?</td><td>8</td></tr>
+    <tr><td><strong>Method choice.</strong> Are the model and CV pipeline appropriate? Are
+        alternatives considered?</td><td>8</td></tr>
+    <tr><td><strong>Validation.</strong> A parameter-recovery or stress-test simulation is
+        present and well-executed.</td><td>10</td></tr>
+    <tr><td><strong>Code quality and reproducibility.</strong> One-command reproduce; clean
+        <code>CLAUDE.md</code>; sensible repo structure.</td><td>8</td></tr>
+    <tr><td><strong>Writing.</strong> Clear, honest, appropriately cautious. Recommendations
+        actionable.</td><td>10</td></tr>
+    <tr><td><strong>AI-use disclosure.</strong> "Tools used" appendix is present, specific, and
+        honest.</td><td>6</td></tr>
+    <tr><th>Total</th><th>50</th></tr>
+  </table>
+
+  <h2>Hard requirements (will lose points if missing)</h2>
+  <ol>
+    <li><code>CLAUDE.md</code> and <code>prompts.md</code> in the repo root.</li>
+    <li>A simulation in the report (even if your project is real-data-driven).</li>
+    <li>The "Tools used" appendix listing every AI tool you used and for what.</li>
+    <li>Reproducibility: instructor must be able to run <code>bash run.sh</code> (or
+      <code>Rscript run.R</code> / <code>python run.py</code>) and get your headline results.</li>
+  </ol>
+
+  <h2>Scope &amp; expectations</h2>
+  <p>This is meant to be ~30 hours of work spread over two weeks &mdash; not a thesis. The
+    instructor will push back on proposals that are too ambitious. A small, well-validated,
+    cleanly-written project will score higher than a big, messy one.</p>
+
+  <h2>Getting unstuck</h2>
+  <p>Drop in to office hours (Tue/Thu 16:00&ndash;17:30 in the two weeks after the course) or
+    post in the course Slack. For library/version issues, Claude Code is your friend &mdash; paste
+    the error.</p>
+
+  <footer>Final project &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

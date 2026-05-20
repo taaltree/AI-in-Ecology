@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Claude Code in RStudio · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="python-intro.html">Python Crash Course</a>
+    <a href="environments.html">Python Environments &amp; Conda</a>
+    <a href="pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="claude-code.html">Claude Code Setup</a>
+    <a href="claude-code-rstudio.html" class="current">Claude Code in RStudio</a>
+    <a href="claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="../labs/lab1.html">Lab 1 · Python</a>
+    <a href="../labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="../labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="../labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="../labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="../labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="../labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="../labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="../labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="../labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="../labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Claude Code in RStudio</h1>
+  <p class="lead">Most of you write R, not Python. This tutorial gets Claude Code working inside
+    your normal RStudio workflow &mdash; with a short detour to explain Node.js, which you may or
+    may not actually need to install.</p>
+
+  <h2>1. Do I need Node.js? (Probably not.)</h2>
+
+  <h3>What is Node.js?</h3>
+  <p><strong>Node.js</strong> is a runtime that lets your computer execute JavaScript code outside
+    a web browser. Many cross-platform developer tools &mdash; including a lot of MCP servers
+    (we'll get to those) and the <em>old</em> way of installing Claude Code &mdash; are written in
+    JavaScript and need Node.js in order to run. The Node.js install also gives you a command-line
+    tool called <strong>npm</strong> ("Node Package Manager"), which is the JavaScript equivalent
+    of <code>pip</code> for Python or <code>install.packages()</code> for R.</p>
+
+  <h3>The honest truth about Claude Code and Node.js</h3>
+  <p>If you install Claude Code via the recommended methods, <strong>you do not need Node.js
+    installed at all</strong>:</p>
+  <table>
+    <tr><th>Install method</th><th>Needs Node.js?</th></tr>
+    <tr><td>Native installer (<code>curl ... | bash</code> on macOS/Linux,
+        <code>irm ... | iex</code> on Windows)</td><td><strong>No</strong></td></tr>
+    <tr><td>Homebrew (<code>brew install --cask claude-code</code>)</td>
+        <td><strong>No</strong></td></tr>
+    <tr><td>WinGet (<code>winget install Anthropic.ClaudeCode</code>)</td>
+        <td><strong>No</strong></td></tr>
+    <tr><td>Linux <code>apt</code> / <code>dnf</code> / <code>apk</code></td>
+        <td><strong>No</strong></td></tr>
+    <tr><td>npm (<code>npm install -g @anthropic-ai/claude-code</code>)</td>
+        <td>Yes &mdash; Node.js 18+</td></tr>
+  </table>
+
+  <h3>So when <em>do</em> I want Node.js?</h3>
+  <p>Three realistic reasons in this course:</p>
+  <ol>
+    <li>Some <strong>MCP servers</strong> are distributed as npm packages and are launched with
+      <code>npx</code>. If you ever want to add, say, the GitHub MCP server or the
+      Notion MCP server to Claude Code, you'll need Node.js installed.</li>
+    <li>You like the <code>npm</code> install path for Claude Code itself because you already use
+      Node tools.</li>
+    <li>You want to update Claude Code through a single package manager you already trust.</li>
+  </ol>
+
+  <p>For our purposes &mdash; running Claude Code with R, using the R MCP server &mdash; you
+    <strong>do not need Node.js</strong>. The R MCP server we'll use (<code>posit-dev/mcptools</code>)
+    is pure R and is launched with <code>Rscript</code>.</p>
+
+  <div class="callout tip">
+    Skip the rest of section 1 if you don't plan to add Node-based MCP servers. Jump to
+    <a href="#section-rstudio">section 2 (RStudio integration)</a>.
+  </div>
+
+  <h2 id="section-node">Installing Node.js</h2>
+
+  <h3>macOS</h3>
+  <pre><code># Recommended: Homebrew
+brew install node
+
+# Verify
+node --version    # v22.x.x or later
+npm  --version    # 10.x.x or later</code></pre>
+
+  <p>If you don't have Homebrew, install it first with the command at
+    <a href="https://brew.sh/">brew.sh</a>, then run <code>brew install node</code>.</p>
+
+  <h3>Windows</h3>
+  <pre><code># PowerShell — works on Windows 10 / 11
+winget install OpenJS.NodeJS.LTS
+
+# Close and re-open PowerShell so PATH refreshes, then:
+node --version
+npm  --version</code></pre>
+
+  <p>Alternatively, the official MSI installer from
+    <a href="https://nodejs.org/en/download">nodejs.org/en/download</a> &mdash; pick the
+    <strong>LTS</strong> ("Long Term Support") download for your OS. Accept all defaults.</p>
+
+  <h3>Linux (Ubuntu/Debian)</h3>
+  <pre><code># The Ubuntu repo version is usually too old. Use NodeSource's installer:
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo apt install -y nodejs
+
+node --version
+npm  --version</code></pre>
+
+  <h3>Why "LTS"?</h3>
+  <p>Node.js has two release tracks: <em>Current</em> (newest features, breaks more often) and
+    <em>LTS</em> (stable, supported for ~30 months). Unless you have a specific reason, pick LTS.
+    It's what almost every MCP server author tests against.</p>
+
+  <h3>Verifying npm can install global packages</h3>
+  <p>Sometimes (especially on Linux), npm wants admin rights to install global packages, which is
+    a bad idea. To make sure it'll install into your user folder instead:</p>
+  <pre><code>mkdir -p ~/.npm-global
+npm config set prefix ~/.npm-global
+
+# Add to your shell startup so the `npx` command from globally-installed
+# packages is on PATH:
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.zshrc   # or ~/.bashrc
+source ~/.zshrc</code></pre>
+
+  <p>On Windows the WinGet installer handles this automatically.</p>
+
+  <div class="callout warn">
+    Never run <code>sudo npm install -g</code>. It creates permission tangles that are painful to
+    undo. If you hit a permission error, fix the prefix as above rather than reaching for
+    <code>sudo</code>.
+  </div>
+
+  <h2 id="section-rstudio">2. Two ways to use Claude Code with RStudio</h2>
+  <p>There are two routes that will cover essentially everything you need to do in this course:</p>
+
+  <table>
+    <tr><th>Route</th><th>What it does</th><th>When to use</th></tr>
+    <tr><td><strong>A &mdash; RStudio terminal pane</strong></td>
+        <td>Run <code>claude</code> in RStudio's built-in terminal. Claude reads and edits your
+        R scripts directly, and can run them with <code>Rscript</code>.</td>
+        <td>Default; works immediately after installing Claude Code.</td></tr>
+    <tr><td><strong>B &mdash; <code>mcptools</code> R MCP server</strong></td>
+        <td>Adds R as a tool Claude can call. Claude can execute R code <em>in your live R
+        session</em>, see your data frames, and inspect plots without re-loading data.</td>
+        <td>When you want Claude to interact with the same R session you're working in &mdash;
+        especially for exploratory analysis and modeling.</td></tr>
+  </table>
+
+  <p>Most students start with route A and add route B once they're comfortable. We'll set up
+    both.</p>
+
+  <h2>3. Route A &mdash; the RStudio terminal pane</h2>
+
+  <h3>Step 1: install Claude Code (no Node.js required)</h3>
+  <p>If you haven't already, follow the install instructions on the
+    <a href="claude-code.html">Claude Code Setup tutorial</a>. The short version:</p>
+  <pre><code># macOS
+brew install --cask claude-code
+
+# Windows (PowerShell)
+winget install Anthropic.ClaudeCode
+
+# Linux / WSL
+curl -fsSL https://claude.ai/install.sh | bash</code></pre>
+  <p>Verify with <code>claude --version</code> in any terminal.</p>
+
+  <h3>Step 2: open RStudio's terminal pane</h3>
+  <p>RStudio has a Terminal tab next to the Console at the bottom of the window. If you don't see
+    it: <strong>Tools &rarr; Terminal &rarr; New Terminal</strong> (or
+    <span class="kbd">Alt</span>+<span class="kbd">Shift</span>+<span class="kbd">R</span> on
+    Windows, <span class="kbd">Option</span>+<span class="kbd">Shift</span>+<span class="kbd">R</span>
+    on macOS).</p>
+
+  <p>The terminal opens in your current RStudio project directory. To confirm:</p>
+  <pre><code>pwd        # should print your project path
+ls         # should list your .R, .Rproj, data/ folder, etc.</code></pre>
+
+  <h3>Step 3: launch Claude Code</h3>
+  <pre><code>claude</code></pre>
+
+  <p>You're now in an interactive Claude Code session inside your R project. Claude can read every
+    file in this folder.</p>
+
+  <h3>Step 4: try a real task</h3>
+  <p>Type:</p>
+  <blockquote><em>"Read <code>analysis.R</code>. Add a goodness-of-fit test after the
+    <code>occu()</code> call using <code>unmarked::mb.gof.test</code> with 200 bootstrap reps.
+    Save the result to <code>results/gof.rds</code>. Run the script with Rscript when you're
+    done."</em></blockquote>
+
+  <p>Claude will:</p>
+  <ol>
+    <li>Show you the proposed diff to <code>analysis.R</code> and ask for approval.</li>
+    <li>Once approved, write the new code.</li>
+    <li>Ask permission to run <code>Rscript analysis.R</code>.</li>
+    <li>Show you the stdout/stderr and the new file it created.</li>
+  </ol>
+
+  <p>That's the whole loop. You stay in RStudio for editing and reviewing diffs; Claude does the
+    repetitive work.</p>
+
+  <div class="callout note">
+    <strong>RStudio doesn't auto-reload edited files.</strong> When Claude edits a script, the
+    file on disk changes but the editor tab in RStudio may still show the old content. Click the
+    file in the Files pane, or run <code>Tools &rarr; Reload All Open Files</code>, to pick up
+    the changes.
+  </div>
+
+  <h3>Step 5: pre-approve safe commands</h3>
+  <p>So you're not clicking "Allow" every time Claude wants to run <code>Rscript</code>, edit
+    <code>~/.claude/settings.json</code> (or, per-project, <code>.claude/settings.json</code> at
+    your project root):</p>
+  <pre><code>{
+  "permissions": {
+    "allow": [
+      "Bash(Rscript *)",
+      "Bash(R CMD *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(ls *)"
+    ]
+  }
+}</code></pre>
+
+  <h2>4. Route B &mdash; let Claude run code in your live R session via <code>mcptools</code></h2>
+
+  <h3>What is <code>mcptools</code>?</h3>
+  <p><code>mcptools</code> (by Posit, the makers of RStudio) is an R package that runs an MCP
+    server in R. Once configured, Claude Code can:</p>
+  <ul>
+    <li>Execute arbitrary R expressions in your active R session,</li>
+    <li>Read your data frames, models, and other in-memory objects,</li>
+    <li>Get the output of <code>summary()</code> / <code>str()</code> / <code>head()</code> /
+      <code>plot()</code> on objects you've already loaded,</li>
+    <li>Install packages (with permission).</li>
+  </ul>
+  <p>This is much more interactive than route A &mdash; Claude doesn't have to re-read your data
+    from disk every time, and it can see exactly what you're seeing in the R console.</p>
+
+  <h3>Step 1: install <code>mcptools</code></h3>
+  <p>In your RStudio Console:</p>
+  <pre><code># CRAN release
+install.packages("mcptools")
+
+# Or the development version
+# install.packages("pak")
+# pak::pak("posit-dev/mcptools")</code></pre>
+
+  <h3>Step 2: register the MCP server with Claude Code</h3>
+  <p>Edit your Claude Code settings file. On macOS/Linux this is <code>~/.claude.json</code>;
+    on Windows it's <code>%USERPROFILE%\.claude.json</code>. Add or extend the
+    <code>mcpServers</code> block:</p>
+
+  <pre><code>{
+  "mcpServers": {
+    "r": {
+      "command": "Rscript",
+      "args": ["-e", "mcptools::mcp_server()"]
+    }
+  }
+}</code></pre>
+
+  <p>If <code>Rscript</code> isn't on your PATH (common on Windows), give the full path:</p>
+  <pre><code>{
+  "mcpServers": {
+    "r": {
+      "command": "C:\\Program Files\\R\\R-4.5.0\\bin\\Rscript.exe",
+      "args": ["-e", "mcptools::mcp_server()"]
+    }
+  }
+}</code></pre>
+
+  <h3>Step 3: attach your live R session</h3>
+  <p>In the R session you want Claude to be able to drive (the one running inside RStudio),
+    register it:</p>
+  <pre><code>library(mcptools)
+mcp_session()</code></pre>
+
+  <p>You'll see a message confirming the session is registered. Leave the session open. Claude
+    Code (started in a different terminal &mdash; e.g., the RStudio Terminal pane) will now see
+    a tool called something like <code>r_run</code> or <code>r_session</code> in its tool
+    list.</p>
+
+  <h3>Step 4: try it</h3>
+  <p>In RStudio's Console, load some data:</p>
+  <pre><code>library(unmarked)
+data(crossbill)
+crossbill_uf &lt;- unmarkedFrameOccu(y = crossbill[, 6:8], siteCovs = crossbill[, 1:5])</code></pre>
+
+  <p>Now, in the Claude Code session (in the RStudio Terminal pane), say:</p>
+  <blockquote><em>"There's a registered R session. Look at the object <code>crossbill_uf</code>
+    in it, summarise its structure, then fit a constant-psi, constant-p single-season occupancy
+    model. Report the back-transformed psi and p with 95% Wald CIs."</em></blockquote>
+
+  <p>Claude will call <code>summary(crossbill_uf)</code> and <code>occu(~1 ~1, crossbill_uf)</code>
+    inside <em>your</em> R session, see the results, back-transform them, and report. No data
+    leaves your laptop.</p>
+
+  <h2>5. The recommended workflow for the labs and final project</h2>
+  <p>For Labs 9 and 10 and most modeling work in the final project:</p>
+  <ol>
+    <li>Open the project in RStudio (your <code>.Rproj</code> file).</li>
+    <li>Open the Terminal pane.</li>
+    <li>Run <code>claude</code> in the terminal and put it in <strong>plan mode</strong>
+      (<span class="kbd">Shift</span>+<span class="kbd">Tab</span>).</li>
+    <li>In the R Console, <code>library(mcptools); mcp_session()</code> if you want route B.</li>
+    <li>Drive the analysis from Claude. Review every diff in the RStudio Source pane before
+      accepting.</li>
+    <li>Commit often (<a href="github-intro.html">see the Git tutorial</a>); Claude can stage and
+      commit too.</li>
+  </ol>
+
+  <h2>6. RStudio-specific gotchas</h2>
+  <table>
+    <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+    <tr><td>Editor still shows old code after Claude edits a file</td>
+        <td>RStudio doesn't auto-reload disk changes.</td>
+        <td><code>Tools &rarr; Reload All Open Files</code>, or close and reopen the tab.</td></tr>
+    <tr><td><code>Rscript: command not found</code> on Windows</td>
+        <td>R's <code>bin</code> directory isn't on PATH.</td>
+        <td>Either add it (<strong>System Properties &rarr; Environment Variables</strong>) or
+        give the absolute path in <code>~/.claude.json</code>.</td></tr>
+    <tr><td>Claude can't see your in-memory objects via route B</td>
+        <td>You didn't call <code>mcp_session()</code>, or you called it in a different R
+        process.</td>
+        <td>Call it in the active RStudio Console, the one whose objects you want Claude to
+        read.</td></tr>
+    <tr><td>"<code>npx ...</code>" errors when adding an MCP server</td>
+        <td>Node.js isn't installed.</td>
+        <td>Install Node.js (<a href="#section-node">section 1</a>). Not needed for the R MCP
+        server.</td></tr>
+    <tr><td>Slow first run of Claude Code in RStudio terminal on Windows</td>
+        <td>Defender / antivirus scanning the binary.</td>
+        <td>Wait it out once; subsequent launches are fast.</td></tr>
+  </table>
+
+  <h2>7. What about the RStudio "Posit Assistant" / Copilot Chat?</h2>
+  <p>RStudio (now Posit Workbench) has its own AI assistance features, including GitHub Copilot
+    integration. You can use them alongside Claude Code &mdash; they don't conflict &mdash; but
+    they're for line-completion and chat, not the autonomous multi-step work Claude Code is
+    designed for. For the labs in this course, use Claude Code.</p>
+
+  <p><a href="claude-code-best-practices.html">→ Continue to Claude Code Dos &amp; Don'ts</a></p>
+
+  <footer>Claude Code in RStudio &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

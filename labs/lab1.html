@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab 1 · Python Warm-up · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="../tutorials/python-intro.html">Python Crash Course</a>
+    <a href="../tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="../tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="../tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="../tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="../tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="../tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="../tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="../tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="lab1.html" class="current">Lab 1 · Python</a>
+    <a href="lab2.html">Lab 2 · PyTorch</a>
+    <a href="lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="lab5.html">Lab 5 · Species Classifier</a>
+    <a href="lab6.html">Lab 6 · BirdNET</a>
+    <a href="lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Lab 1 &middot; Python Warm-up on Camera-Trap Metadata</h1>
+
+  <div class="lab-meta">
+    <strong>Worth:</strong> 20 points &nbsp;|&nbsp;
+    <strong>Due:</strong> end of Day 1 &nbsp;|&nbsp;
+    <strong>Files to submit:</strong> <code>lab1.ipynb</code> (or <code>.py</code>) and a 1-page
+    PDF with the two required plots and a short paragraph of interpretation.<br>
+    <strong>Pre-reading:</strong> <a href="../tutorials/python-intro.html">Python Crash Course</a>.
+  </div>
+
+  <h2>Biological motivation</h2>
+  <p>Before you train any model, you should know your data. For camera-trap images that means
+    understanding the temporal distribution: when were cameras triggered? Which hours of the day?
+    Across which months? Are there cameras with missing data or stuck-shutter problems? This lab
+    builds those habits.</p>
+
+  <h2>Data</h2>
+  <div class="callout tip"><strong>Get the data:</strong> <a href="../downloads/aiecol_cameratraps.zip">aiecol_cameratraps.zip (297 MB)</a> &mdash; or the full bundle <a href="../downloads/aiecol_data_sample.zip">aiecol_data_sample.zip (395 MB)</a>. See the <a href="../downloads/index.html">downloads page</a> for layout.</div>
+  <p>The course provides a 200-image teaching subset of Oregon Critters in
+    <code>data_sample/cameratraps/</code>, plus a tidy CSV
+    <code>data_sample/oregon_critters_subset.csv</code> with one row per
+    <em>bounding-box annotation</em> (multiple rows per image for multi-animal frames). Columns:</p>
+  <pre><code>image, label, category_id, datetime, location, width, height,
+bbox_x, bbox_y, bbox_w, bbox_h, split, orig_id</code></pre>
+  <p>The full Oregon Critters dataset (~100,000 images) is available at
+    <a href="https://lila.science/datasets/oregon-critters/">LILA</a> if you want to scale up later
+    &mdash; AzCopy or the <code>azure-storage</code> CLI work. For this lab the 200-image subset
+    is enough.</p>
+
+  <h2>Tasks</h2>
+
+  <h3>Task 1 &mdash; warm-up (3 pts)</h3>
+  <p>In a Jupyter notebook, load the metadata CSV with pandas. Print:</p>
+  <ul>
+    <li>The number of <em>unique images</em> (use <code>drop_duplicates("image")</code>; the CSV
+      has one row per bounding box).</li>
+    <li>The number of unique <code>location</code>s.</li>
+    <li>The number of unique species (<code>label</code>) excluding <code>"empty"</code>.</li>
+    <li>The earliest and latest <code>datetime</code> in the dataset.</li>
+  </ul>
+
+  <h3>Task 2 &mdash; per-location image counts (3 pts)</h3>
+  <p>Build a bar chart of the number of images per camera location (top 30 if there are many),
+    sorted descending. Save as <code>fig1_per_site.png</code>. Include in your PDF.</p>
+
+  <h3>Task 3 &mdash; diel activity for the top 3 species (6 pts)</h3>
+  <p>For the 3 most-detected species (still excluding <code>"empty"</code>):</p>
+  <ol>
+    <li>Extract the hour of day from <code>datetime</code>.</li>
+    <li>Compute the fraction of detections in each of the 24 hour-of-day bins, normalized within
+      species.</li>
+    <li>Plot all three species on the same axes (line plot, x = hour, y = fraction of detections).
+      Save as <code>fig2_diel.png</code>.</li>
+  </ol>
+
+  <h3>Task 4 &mdash; EXIF sanity check (4 pts)</h3>
+  <p>Pick 30 random images. For each, read the EXIF <code>DateTimeOriginal</code> and compare to
+    the <code>datetime</code> in the CSV. How many disagree by more than 60 seconds? (Common in
+    field data after SD-card copies between operating systems &mdash; the curated LILA subset
+    used here is clean, so expect near-zero. Report whatever you find.)</p>
+
+  <h3>Task 5 &mdash; interpretation (4 pts)</h3>
+  <p>In your PDF, write 100&ndash;200 words answering:</p>
+  <ul>
+    <li>Are the top species' diel patterns consistent with their natural history?</li>
+    <li>What does the per-site count distribution tell you about sampling effort?</li>
+    <li>Any data-quality flags you'd want to address before training a model on this data?</li>
+  </ul>
+
+  <h2>Go-further (counts toward the 4 "go-further" pts in your rubric)</h2>
+  <p>Stratify the diel plots by month. Do you see seasonal shifts?</p>
+
+  <h2>Rubric</h2>
+  <table>
+    <tr><th>Component</th><th>Points</th></tr>
+    <tr><td>Code runs and produces required outputs</td><td>10</td></tr>
+    <tr><td>Written interpretation</td><td>6</td></tr>
+    <tr><td>Go-further task</td><td>4</td></tr>
+    <tr><th>Total</th><th>20</th></tr>
+  </table>
+
+  <p><strong>Starter notebook:</strong>
+    <a href="../code/cameratraps/lab1_starter.py">lab1_starter.py</a> (run as a script or paste cells
+    into Jupyter).</p>
+
+  <footer>Lab 1 &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Claude Code Setup · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="python-intro.html">Python Crash Course</a>
+    <a href="environments.html">Python Environments &amp; Conda</a>
+    <a href="pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="claude-code.html" class="current">Claude Code Setup</a>
+    <a href="claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="../labs/lab1.html">Lab 1 · Python</a>
+    <a href="../labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="../labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="../labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="../labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="../labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="../labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="../labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="../labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="../labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="../labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Claude Code: Setup and the Four Ways to Use It</h1>
+  <p class="lead">Claude Code is Anthropic's AI coding assistant. It can read your files, run shell
+    commands, edit code, and execute long multi-step research tasks &mdash; locally, on your data.
+    This tutorial shows you how to install and use it on macOS and Windows in both the terminal
+    and the desktop app.</p>
+
+  <h2>1. Installation</h2>
+
+  <h3>macOS &mdash; Terminal (CLI)</h3>
+  <pre><code># Easiest: with Homebrew
+brew install --cask claude-code
+
+# Or, with npm (works on any platform)
+npm install -g @anthropic-ai/claude-code
+
+# Verify
+claude --version</code></pre>
+
+  <h3>macOS &mdash; Desktop App</h3>
+  <p>Download <strong>Claude.app</strong> from
+    <a href="https://claude.ai/download">claude.ai/download</a>, drag it to Applications, and open
+    it. Claude Code is available <em>inside</em> the desktop app as a side panel for any project
+    folder you open. The desktop and CLI share the same login (your Claude account), so a tool that
+    you've authorised in one is authorised in the other.</p>
+
+  <h3>Windows &mdash; Terminal (CLI)</h3>
+  <pre><code># PowerShell, as Administrator
+winget install Anthropic.ClaudeCode
+
+# Or via npm
+npm install -g @anthropic-ai/claude-code
+
+# Verify
+claude --version</code></pre>
+
+  <p>On Windows you'll get the smoothest experience using <strong>Windows Terminal</strong> (not
+    the legacy cmd.exe). If you're a developer, install <strong>WSL2 + Ubuntu</strong> and run
+    Claude Code from inside WSL &mdash; many ML tools assume a UNIX environment and "just work" there.</p>
+
+  <h3>Windows &mdash; Desktop App</h3>
+  <p>Download <strong>Claude for Windows</strong> from
+    <a href="https://claude.ai/download">claude.ai/download</a> and run the installer. Same
+    integration as on macOS &mdash; open any project folder and Claude Code is a side panel.</p>
+
+  <h3>First-run login</h3>
+  <p>The very first time you run <code>claude</code> from a terminal it'll open your browser to
+    log in. After that your credentials are cached in <code>~/.claude/</code> (macOS/Linux) or
+    <code>%USERPROFILE%\.claude\</code> (Windows). The desktop app uses the same credentials.</p>
+
+  <h2>2. The four ways to use Claude Code</h2>
+
+  <h3>Way 1 &middot; Terminal, one-off prompt</h3>
+  <pre><code># Print a single answer and exit
+claude -p "Summarize the columns in detections.csv as a markdown table"</code></pre>
+  <p>Use for: quick lookups, scripts and pipelines, CI/cron jobs ("run this every Monday and
+    summarize the new detections").</p>
+
+  <h3>Way 2 &middot; Terminal, interactive session</h3>
+  <pre><code># From your project root
+cd ~/research/oregon_critters_2025
+claude</code></pre>
+
+  <p>Drops you into a REPL where Claude can read your files, edit them, run commands, and ask you
+    follow-ups. Useful keystrokes:</p>
+  <table>
+    <tr><th>Keys</th><th>Action</th></tr>
+    <tr><td><span class="kbd">Tab</span></td><td>Cycle file completions</td></tr>
+    <tr><td><span class="kbd">Esc</span></td><td>Interrupt the model mid-stream</td></tr>
+    <tr><td><span class="kbd">Shift</span> + <span class="kbd">Tab</span></td>
+        <td>Switch between auto-edit / plan / accept-each-edit modes</td></tr>
+    <tr><td><code>/plan</code></td><td>Force planning mode &mdash; Claude writes a plan and pauses for
+        your approval before editing.</td></tr>
+    <tr><td><code>/clear</code></td><td>Wipe the conversation context (start fresh, same project).</td></tr>
+    <tr><td><code>/exit</code></td><td>Quit the session.</td></tr>
+  </table>
+
+  <p>Use for: actual day-to-day coding work, debugging, refactoring, "do this whole thing".</p>
+
+  <h3>Way 3 &middot; Desktop app, file-picker chat</h3>
+  <p>Open Claude.app, click <strong>New conversation</strong>, attach the file(s) you want to talk
+    about, and chat. This is what most non-coders use first.</p>
+
+  <p>Use for: quickly asking Claude to look at a CSV and propose a model, summarize a paper PDF,
+    or convert a Word document into a table.</p>
+
+  <h3>Way 4 &middot; Desktop app, project workspace</h3>
+  <p>Click <strong>Open folder</strong> and pick your project directory. The right-hand panel is a
+    full Claude Code conversation with read/write access to that folder. The middle pane shows
+    file diffs as Claude edits them &mdash; you click <strong>Approve</strong> or
+    <strong>Reject</strong> on each one.</p>
+
+  <p>Use for: long sessions where you want a visual diff to review, side-by-side with the code.</p>
+
+  <h2>3. Choosing between them</h2>
+  <table>
+    <tr><th>If you want to&hellip;</th><th>Use</th></tr>
+    <tr><td>Run a 30-second one-off ("how many sites are in this CSV?")</td>
+        <td>Way 1 (terminal one-off)</td></tr>
+    <tr><td>Have Claude do a multi-step task (read data, simulate, fit a model, plot)</td>
+        <td>Way 2 (terminal interactive)</td></tr>
+    <tr><td>Bring a PI or non-coder colleague into the loop</td>
+        <td>Way 3 (desktop chat)</td></tr>
+    <tr><td>Refactor 20 files and watch every diff</td>
+        <td>Way 4 (desktop workspace)</td></tr>
+  </table>
+
+  <h2>4. Plan mode &mdash; the most important feature for research</h2>
+  <p>When you ask Claude Code to do something non-trivial, you almost always want it to plan
+    before it acts. Press <span class="kbd">Shift</span>+<span class="kbd">Tab</span> until you see
+    <strong>plan mode</strong> in the status bar (or use <code>/plan</code>). In plan mode Claude
+    will:</p>
+  <ol>
+    <li>Read the relevant files,</li>
+    <li>Write out a step-by-step plan with files it intends to create/modify,</li>
+    <li>Stop and wait for your approval,</li>
+    <li>Then execute the plan.</li>
+  </ol>
+  <p>For everything statistical in this course &mdash; simulations, model fitting, report generation
+    &mdash; <em>always</em> start in plan mode. The cost is 30 seconds; the upside is catching wrong
+    approaches before they cost you an hour.</p>
+
+  <h2>5. <code>CLAUDE.md</code> &mdash; your project context file</h2>
+  <p>Drop a file called <code>CLAUDE.md</code> at the root of your project. Claude reads it
+    automatically every time it starts a session in that folder. Use it to record:</p>
+  <ul>
+    <li>What the project is and what the biology question is.</li>
+    <li>Where the data lives and what its columns mean.</li>
+    <li>Conventions you want followed ("use <code>unmarked</code>, not <code>ubms</code>, for
+      occupancy fits").</li>
+    <li>Anything that's gone wrong before that you don't want repeated.</li>
+  </ul>
+
+  <p>Example for a camera-trap project:</p>
+  <pre><code># Oregon Critters &mdash; Crater Lake 2024
+
+This project analyzes camera-trap data from 24 cameras deployed at Crater Lake
+National Park, July&ndash;September 2024.
+
+## Data
+- `data/raw/`              raw images, one folder per camera
+- `data/detections.csv`    output of MegaDetector v5 (animal/person/vehicle)
+- `data/classifications.csv` output of our YOLOv8 species classifier
+- `data/sites.csv`         per-camera covariates (elevation, NDVI, distance to road)
+
+## Conventions
+- Use R + `unmarked` for occupancy modelling. Not `ubms`.
+- All plots use `ggplot2` with `theme_bw()` and viridis colour scales.
+- Random seed for any simulation: 42.
+- Site IDs are strings like "CL_A12", never integers.
+
+## Known issues
+- Camera CL_B07 had a stuck shutter on 2024-08-12; drop that day.
+- The species "elk" includes both Roosevelt and Rocky Mountain elk &mdash; not
+  separable from imagery.</code></pre>
+
+  <h2>6. Permissions and safety</h2>
+  <p>Claude Code asks before doing anything risky. The default policy is:</p>
+  <ul>
+    <li><strong>Read</strong> any file in the project: allowed without asking.</li>
+    <li><strong>Edit</strong> a file: prompts for approval the first time per session, then runs
+      freely.</li>
+    <li><strong>Run shell commands</strong>: prompts every time unless you've granted blanket
+      permission for a command class.</li>
+    <li><strong>Network access / outside the project folder</strong>: always prompts.</li>
+  </ul>
+
+  <p>You can pre-approve patterns by adding them to <code>.claude/settings.json</code>:</p>
+  <pre><code>{
+  "permissions": {
+    "allow": [
+      "Bash(python *)",
+      "Bash(Rscript *)",
+      "Bash(git status)",
+      "Bash(ls *)"
+    ]
+  }
+}</code></pre>
+
+  <div class="callout warn">
+    <strong>Don't blindly allow <code>Bash(*)</code>.</strong> That gives Claude permission to run
+    any shell command, including ones that delete files. The course's recommended baseline is the
+    block above &mdash; permissive enough for analysis, conservative on file deletion.
+  </div>
+
+  <h2>7. MCP servers (optional, for advanced users)</h2>
+  <p>The Model Context Protocol (MCP) lets Claude talk to outside services as if they were tools.
+    Useful MCP servers for ecology work:</p>
+  <ul>
+    <li><strong>R via <code>mcptools</code></strong> &mdash; lets Claude execute R code in your
+      active R or RStudio session and inspect your data frames and models. Pure R, no Node.js
+      needed. See the <a href="claude-code-rstudio.html">Claude Code in RStudio</a> tutorial for
+      a slow walkthrough.</li>
+    <li><strong>SQLite MCP</strong> &mdash; for camera-trap projects with detection databases.</li>
+    <li><strong>Filesystem MCP</strong> &mdash; lets Claude read files outside the project
+      directory (e.g., a shared archive drive).</li>
+    <li><strong>GitHub MCP</strong> &mdash; rich interaction with GitHub issues, PRs, and
+      repository contents (Node.js required &mdash; this one is launched with <code>npx</code>).</li>
+  </ul>
+
+  <p>For most R users, the only one worth setting up early is <code>mcptools</code>. Install in
+    R with <code>install.packages("mcptools")</code>, then add this block to
+    <code>~/.claude.json</code>:</p>
+  <pre><code>{
+  "mcpServers": {
+    "r": {
+      "command": "Rscript",
+      "args": ["-e", "mcptools::mcp_server()"]
+    }
+  }
+}</code></pre>
+
+  <p>Full configuration and the live-R-session workflow are in the
+    <a href="claude-code-rstudio.html">Claude Code in RStudio tutorial</a>.</p>
+
+  <h2 id="section-git">8. Driving Git and GitHub through Claude Code</h2>
+  <p>This section assumes you have worked through the <a href="github-intro.html">Git &amp; GitHub
+    tutorial</a> at least far enough that you have <code>git</code> installed, a GitHub account,
+    and either the <code>gh</code> CLI authenticated or an SSH key set up. If not, go do that
+    first &mdash; Claude Code is great at <em>using</em> git, but it can't install it for you, and
+    it can't log into GitHub on your behalf.</p>
+
+  <p>The promise of pairing Claude Code with GitHub is that you can stay in plain English for
+    almost everything. You describe what you want; Claude runs the right commands and shows you
+    the diff. We'll walk through this in slow motion.</p>
+
+  <h3>Step 1 &mdash; tell Claude Code about your project</h3>
+  <p>Open a terminal and navigate to a folder you want to put under version control:</p>
+  <pre><code>cd ~/research/oregon_critters_lab3
+ls
+# detect.py  data.yaml  results.csv  figs/</code></pre>
+
+  <p>Start a Claude Code session:</p>
+  <pre><code>claude</code></pre>
+
+  <p>At the prompt, type:</p>
+  <blockquote><em>"This folder isn't a git repo yet. Initialize it, write a sensible
+    <code>.gitignore</code> for a Python/PyTorch + camera-trap project (no images, no model
+    weights, no Anthropic credentials), make an initial commit, and stop. Don't push anywhere
+    yet."</em></blockquote>
+
+  <p>Claude will (a) propose the commands, (b) ask permission to run <code>git init</code>,
+    (c) write <code>.gitignore</code>, (d) <code>git add</code> the source files but not the
+    data/weights, (e) <code>git commit -m "initial commit"</code>. <strong>Watch the
+    <code>.gitignore</code> diff carefully</strong>: this is the file most likely to leak
+    something later if it's wrong now.</p>
+
+  <h3>Step 2 &mdash; create the GitHub repo from inside Claude Code</h3>
+  <p>If you have <code>gh</code> installed and authenticated, you don't need to leave the
+    terminal:</p>
+  <blockquote><em>"Create a private GitHub repo called <code>oregon-critters-lab3</code> under my
+    account using <code>gh repo create</code>, then push the current branch."</em></blockquote>
+
+  <p>Claude will run something like:</p>
+  <pre><code>gh repo create oregon-critters-lab3 --private --source=. --remote=origin --push</code></pre>
+  <p>You'll see the repo URL in the output. Open it in a browser to confirm.</p>
+
+  <div class="callout warn">
+    <strong>If you haven't authenticated <code>gh</code> yet</strong>, Claude will hit a prompt
+    and pause. Do <em>not</em> have Claude paste your password or token. Run <code>gh auth
+    login</code> yourself in a separate terminal (it opens a browser), then come back and tell
+    Claude to retry.
+  </div>
+
+  <h3>Step 3 &mdash; the everyday "commit and push" loop with Claude</h3>
+  <p>After you've made changes, ask Claude:</p>
+  <blockquote><em>"Show me <code>git status</code> and <code>git diff --stat</code>. Then group
+    the changes into 2&ndash;3 logical commits, write a clear commit message for each, and push.
+    Don't include anything in <code>data/</code> or any <code>.pt</code> files."</em></blockquote>
+
+  <p>Claude will:</p>
+  <ol>
+    <li>Run <code>git status</code> &mdash; you see what's changed.</li>
+    <li>Run <code>git diff --stat</code> &mdash; you see how many lines per file.</li>
+    <li>Propose grouped commits: <em>"commit 1: detect.py &mdash; lower confidence threshold to
+      0.2"; "commit 2: figs/pr_curves.png &mdash; refreshed plots"; "commit 3: README.md &mdash;
+      document the threshold change"</em>.</li>
+    <li>Stage, commit, and push each group.</li>
+  </ol>
+
+  <p>This is much better than letting Claude pile every change into one giant commit, because
+    your <code>git log</code> stays useful.</p>
+
+  <h3>Step 4 &mdash; cloning and exploring someone else's repo</h3>
+  <p>Say you want to use Zach Ruff's <code>pycnet-audio</code> package and you want a tour before
+    you run anything. From a fresh terminal:</p>
+  <pre><code>cd ~/research
+git clone https://github.com/zjruff/pycnet-audio.git
+cd pycnet-audio
+claude</code></pre>
+
+  <p>Then ask:</p>
+  <blockquote><em>"Read the README, the docs/ folder, and pyproject.toml. Summarize in 5 bullets:
+    (1) what this package does, (2) what the main CLI commands are, (3) what its Python and
+    SoX version requirements are, (4) how the spectrogram pipeline is parallelised, and (5)
+    anything that would trip me up on macOS / Apple Silicon. Don't run anything &mdash; just
+    read."</em></blockquote>
+
+  <p>You'll get a tight orientation in a minute or two. This is one of the biggest wins of
+    pairing Claude Code with GitHub: you don't have to read every repo cover-to-cover before you
+    know whether it's worth installing.</p>
+
+  <h3>Step 5 &mdash; branches and pull requests</h3>
+  <p>For any non-trivial change, work on a branch:</p>
+  <blockquote><em>"Make a branch called <code>fix-threshold-doc</code>, change the default
+    confidence threshold in <code>detect.py</code> from 0.25 to 0.20, update the README to match,
+    commit, and push the branch."</em></blockquote>
+
+  <p>Then open a PR against your <code>main</code> branch (great for code review with a TA or
+    advisor) without leaving Claude:</p>
+  <blockquote><em>"Open a pull request from <code>fix-threshold-doc</code> to <code>main</code>
+    using <code>gh pr create</code>. The title should be 'Lower default MD threshold to 0.20'.
+    Write a description with three sections: Motivation, Changes, Testing."</em></blockquote>
+
+  <p>Claude will produce the PR with a heredoc'd body and show you the URL. Reviewers can
+    comment line-by-line on GitHub, and you can keep pushing commits to the same branch &mdash;
+    they'll appear in the PR automatically.</p>
+
+  <h3>Step 6 &mdash; contributing back to <code>pycnet-audio</code> (the real workflow)</h3>
+  <p>You found a small bug in someone else's repo. The fork-PR cycle in Claude Code:</p>
+  <blockquote><em>"I want to contribute a fix to <code>zjruff/pycnet-audio</code>. Fork it under
+    my account with <code>gh repo fork</code>, clone the fork into <code>~/research/</code>,
+    create a branch called <code>fix-readme-typo</code>, change line 42 of README.md from 'reqiures'
+    to 'requires', commit with a clear message, push, and open a PR upstream. Walk me through
+    each step before you run it."</em></blockquote>
+
+  <p>The "walk me through each step before you run it" suffix is important: it forces Claude into
+    a checkpointed mode where you approve each command. For a workflow that touches someone else's
+    repo, you absolutely want that.</p>
+
+  <h3>Step 7 &mdash; reading and resolving merge conflicts</h3>
+  <p>When a <code>git pull</code> fails with a conflict, you'll see something like
+    <code>CONFLICT (content): Merge conflict in detect.py</code>. Don't panic. Tell Claude:</p>
+  <blockquote><em>"I have a merge conflict in <code>detect.py</code>. Show me the conflicted
+    sections, explain in plain English what each side did, and propose a resolution that keeps
+    both my new threshold logic and the upstream logging change. Don't auto-resolve &mdash; show
+    me the diff and wait for me to approve."</em></blockquote>
+
+  <p>This is where AI-assisted git pays off: merge conflicts are tedious but conceptually simple,
+    and Claude is very good at them &mdash; provided you make it explain rather than
+    auto-resolve.</p>
+
+  <h3>Common pitfalls when mixing Claude Code with git</h3>
+  <table>
+    <tr><th>What goes wrong</th><th>Why</th><th>Fix</th></tr>
+    <tr><td>Claude commits 2 GB of camera-trap images</td>
+        <td>You didn't write a <code>.gitignore</code> first, and "stage everything" felt
+        convenient.</td>
+        <td>Always do step 1 above. After the fact, use <code>git rm --cached -r data/</code> and
+        recommit.</td></tr>
+    <tr><td>Claude force-pushes and overwrites your colleague's work</td>
+        <td>Claude was trying to "clean up" history without realizing others had pulled.</td>
+        <td>Never permit <code>git push --force</code> in <code>.claude/settings.json</code>.
+        Force-push only when you understand why.</td></tr>
+    <tr><td>Your Anthropic credentials end up on GitHub</td>
+        <td><code>.claude/credentials.json</code> wasn't in <code>.gitignore</code>.</td>
+        <td>Add it (the template in step 1 includes it). If it already leaked: rotate the key
+        on console.anthropic.com immediately and remove the file from history.</td></tr>
+    <tr><td>Commit messages are vague ("update", "wip")</td>
+        <td>Claude wasn't told what good commits look like for your project.</td>
+        <td>Put a 3-line "commit message style" section in your <code>CLAUDE.md</code>.</td></tr>
+  </table>
+
+  <h2>9. A 5-minute first session</h2>
+  <ol>
+    <li>Create a new folder: <code>mkdir cc_demo &amp;&amp; cd cc_demo</code></li>
+    <li>Drop a small CSV into it (e.g., one site's BirdNET output).</li>
+    <li>Run <code>claude</code>.</li>
+    <li>Type: <em>"Look at the CSV in this folder. Tell me which species had the most detections
+      and plot the diel activity pattern for the top 3 species. Use Python and save the figures
+      to PNG."</em></li>
+    <li>Watch it plan, write the script, run it, and show you the output. Approve each edit.</li>
+  </ol>
+
+  <p><a href="claude-code-best-practices.html">→ Continue to Claude Code: Dos &amp; Don'ts</a></p>
+
+  <footer>Claude Code setup &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>

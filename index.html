@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI in Ecology · Syllabus</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="index.html" class="current">Syllabus &amp; Home</a>
+    <a href="schedule.html">Full Schedule</a>
+    <a href="lectures/index.html">Lecture Slides</a>
+    <a href="downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="tutorials/python-intro.html">Python Crash Course</a>
+    <a href="tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="labs/lab1.html">Lab 1 · Python</a>
+    <a href="labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Applications of Artificial Intelligence in Ecology</h1>
+  <p class="lead">A five-day intensive course on practical AI for wildlife biologists: computer vision
+    for camera traps, deep learning for bioacoustics, and AI-assisted statistical &amp; mechanistic
+    modeling with Claude Code.</p>
+
+  <h2>Course description</h2>
+  <p>Camera traps, autonomous recording units, and other passive sensors now generate datasets so large
+    that no field biologist can manually process them. At the same time, large language models like
+    Claude have become genuinely useful for writing simulations, fitting statistical models, and
+    producing reproducible analyses. This course teaches you how to use both worlds — pretrained
+    deep-learning models for media (images and audio) and AI coding assistants for analysis — to do
+    better ecology, faster.</p>
+
+  <p>You will not write Python from a blank page. You will run, modify, and reason about
+    well-annotated code, and you will use Claude Code to help you go from a biological question to a
+    defensible analysis.</p>
+
+  <h2>Learning outcomes</h2>
+  <p>By the end of the course you will be able to:</p>
+  <ol>
+    <li>Run pretrained detectors (MegaDetector, YOLO) on camera-trap imagery and interpret precision,
+      recall, and confidence thresholds in an ecological context.</li>
+    <li>Fine-tune a YOLO/Darknet classifier on a labelled subset of the <strong>Oregon Critters</strong>
+      dataset and evaluate it honestly.</li>
+    <li>Run <strong>BirdNET</strong> and <strong>PNW-Cnet</strong> on field audio, train a small
+      spectrogram classifier, and reason about false positives in soundscape data.</li>
+    <li>Install and use <strong>Claude Code</strong> on macOS and Windows, in both the terminal and
+      the desktop app, and integrate it into a research workflow.</li>
+    <li>Use Claude Code to simulate data, prove that a statistical model recovers unbiased
+      parameters, test assumption violations, and produce a reproducible report.</li>
+    <li>Recognize when AI tools are likely to be wrong, and when they are likely to be correct.</li>
+    <li>Use GUI alternatives (Shiny PNW-Cnet for audio review; Njobvu-AI for
+      collaborative image labeling and training) when a command-line workflow
+      isn't appropriate for the team or the task.</li>
+  </ol>
+
+  <h2>Pre-course materials (do these before Day 1)</h2>
+  <ol>
+    <li><strong>Watch Sara Beery's intro lecture</strong> (~70 min):
+      <a href="https://www.youtube.com/watch?v=5rE2ogBh0zc">YouTube</a>.
+      Beery leads the MIT computer-vision-for-biodiversity group; this lecture
+      frames the whole "why CV for ecology" question better than anything else
+      you'll find, and several of our morning lectures build directly on it.</li>
+    <li><strong>Skim the 12 PDF / PPT slide decks</strong> shipped with the
+      course (in the project root: <code>Lecture 0_*</code> through
+      <code>Lecture 11_*</code>). <em>These slides were prepared by Sara
+      Beery</em> for her CV short course and are used in this course with
+      attribution &mdash; please don't redistribute. They form the technical
+      backbone of the CV lectures (Days&nbsp;1&ndash;3) and are referenced by
+      topic in the <a href="schedule.html">detailed schedule</a>.</li>
+    <li>Run through the software pre-flight on the
+      <a href="tutorials/python-intro.html">Python tutorial</a>; make sure
+      <code>claude --version</code> works (see
+      <a href="tutorials/claude-code.html">Claude Code setup</a>).</li>
+  </ol>
+
+  <h2>Prerequisites</h2>
+  <ul>
+    <li>A laptop (macOS, Windows, or Linux) on which you have admin rights to install software.</li>
+    <li>A free <a href="https://lila.science/">LILA BC</a> account to download the Oregon Critters
+      dataset.</li>
+    <li>A <a href="https://claude.ai">Claude account</a> with access to Claude Code (the instructor
+      will provide a temporary code for the course week).</li>
+    <li>Some prior exposure to <strong>R</strong> or another statistical language is helpful. No
+      Python required.</li>
+    <li>Familiarity with at least one of: occupancy modeling, mark–recapture, N-mixture models,
+      species distribution models, or population viability analysis.</li>
+  </ul>
+
+  <h2>Grading</h2>
+  <table>
+    <tr><th>Component</th><th>Each</th><th>Count</th><th>Total</th></tr>
+    <tr><td>Labs (1–11)</td><td>20 pts</td><td>11</td><td>220 pts</td></tr>
+    <tr><td>Final project (code + report)</td><td>50 pts</td><td>1</td><td>50 pts</td></tr>
+    <tr><th colspan="3">Course total</th><th>270 pts</th></tr>
+  </table>
+
+  <p>There are no exams. Letter grades are assigned on the standard scale (A &ge; 90%, B &ge; 80%,
+    C &ge; 70%, D &ge; 60%). Late labs are accepted at &minus;5 pts/day for up to four days.</p>
+
+  <h3>Lab structure</h3>
+  <p>Each lab has a written handout, a runnable Jupyter or <code>.py</code> file, and a deliverable:
+    usually a short PDF (1–3 pages) with figures, plus the modified code. Lab points break down as:</p>
+  <ul>
+    <li><strong>10 pts</strong> &mdash; code runs and produces the required outputs.</li>
+    <li><strong>6 pts</strong> &mdash; written interpretation of the results (what does this mean
+      biologically?).</li>
+    <li><strong>4 pts</strong> &mdash; one "go-further" question per lab (open-ended, graded on
+      effort).</li>
+  </ul>
+
+  <h2>Final project (50 pts)</h2>
+  <p>Use what you have learned to answer a small research question of your choice. Examples:</p>
+  <ul>
+    <li>Estimate occupancy of a focal species in a published camera-trap dataset using a YOLO
+      classifier you trained, and quantify the bias introduced by classifier error.</li>
+    <li>Run BirdNET or PNW-Cnet on a soundscape you collect or download and produce a species list
+      with calibrated confidence thresholds.</li>
+    <li>Build a simulation that tests whether a chosen statistical model (occupancy, N-mixture,
+      Cormack-Jolly-Seber, integrated population model, etc.) recovers unbiased parameters when one
+      key assumption is violated.</li>
+  </ul>
+  <p>See <a href="final-project.html">final project page</a> for the rubric and the timeline.</p>
+
+  <h2>Datasets and tools</h2>
+  <table>
+    <tr><th>Resource</th><th>Used for</th></tr>
+    <tr><td><a href="https://lila.science/datasets/oregon-critters/">Oregon Critters</a></td>
+        <td>Camera-trap labs (3, 4, 5)</td></tr>
+    <tr><td><a href="https://github.com/microsoft/CameraTraps">MegaDetector</a></td>
+        <td>Animal detection baseline (Lab 3)</td></tr>
+    <tr><td><a href="https://github.com/ultralytics/ultralytics">Ultralytics YOLO</a> &amp;
+        <a href="https://github.com/AlexeyAB/darknet">Darknet</a></td>
+        <td>Detection &amp; classification (Labs 3–5)</td></tr>
+    <tr><td><a href="https://birdnet.cornell.edu/">BirdNET</a></td>
+        <td>Bird vocalization ID (Lab 6)</td></tr>
+    <tr><td><a href="https://github.com/zjruff/pycnet-audio">pycnet-audio</a>
+        &amp; <a href="https://github.com/zjruff/Shiny_PNW-Cnet">Shiny PNW-Cnet</a></td>
+        <td>Pacific Northwest forest acoustic monitoring (Labs 7, 11)</td></tr>
+    <tr><td><a href="https://github.com/sullichrosu/Njobvu-AI">Njobvu-AI</a></td>
+        <td>Collaborative GUI for image labeling and model training (Lab 11)</td></tr>
+    <tr><td><a href="https://claude.com/claude-code">Claude Code</a></td>
+        <td>AI-assisted simulation, analysis, and report writing (Labs 8–10, project)</td></tr>
+    <tr><td>R packages <code>unmarked</code>, <code>nimble</code>, <code>RMark</code></td>
+        <td>Statistical modeling for Labs 9–10</td></tr>
+  </table>
+
+  <h2>Schedule at a glance</h2>
+  <table>
+    <tr><th>Day</th><th>Morning</th><th>Afternoon</th></tr>
+    <tr><td><strong>1</strong> · Foundations</td>
+        <td>Intro to AI in ecology &middot; <em>Lab 1: Python</em></td>
+        <td>PyTorch &amp; the DL workflow &middot; <em>Lab 2: PyTorch</em></td></tr>
+    <tr><td><strong>2</strong> · Camera traps I</td>
+        <td>Object detection (YOLO/MegaDetector) &middot; <em>Lab 3: Detection</em></td>
+        <td>Training &amp; fine-tuning detectors &middot; <em>Lab 4: Custom YOLO</em></td></tr>
+    <tr><td><strong>3</strong> · Camera traps II &amp; bioacoustics</td>
+        <td>Species classification on cropped detections &middot; <em>Lab 5: Classifier</em></td>
+        <td>Intro to bioacoustic monitoring &middot; <em>Lab 6: BirdNET</em></td></tr>
+    <tr><td><strong>4</strong> · Bioacoustics &amp; Claude Code</td>
+        <td>PNW-Cnet &amp; custom spectrogram CNNs &middot; <em>Lab 7: PNW-Cnet</em></td>
+        <td>Claude Code setup &amp; usage &middot; <em>Lab 8: Pipeline</em><br>
+            <em>Evening: Lab 11 (GUI workflows &mdash; Shiny PNW-Cnet + Njobvu-AI)</em></td></tr>
+    <tr><td><strong>5</strong> · Statistical modeling</td>
+        <td>Parameter recovery &amp; mechanistic models &middot; <em>Lab 9: Sim</em></td>
+        <td>Assumption violations &amp; defensible reporting &middot; <em>Lab 10: Analysis</em></td></tr>
+  </table>
+
+  <p>See the <a href="schedule.html">full schedule</a> for room assignments, readings, and per-session
+    times.</p>
+
+  <h2>Academic honesty &amp; use of AI</h2>
+  <p>This course is <em>about</em> using AI. You are expected and encouraged to use Claude Code on
+    labs and your final project. You are <strong>required</strong> to:</p>
+  <ol>
+    <li>Disclose, in a "tools used" appendix in your reports, which AI tools you used and roughly
+      what for ("I used Claude Code to write the simulation in section 2 and to draft the figure
+      captions").</li>
+    <li>Be able to explain any code or analysis you submit. If asked in person, you must be able to
+      reason about why the model converged the way it did, why a threshold was chosen, etc. "Claude
+      wrote it" is not a defense.</li>
+    <li>Not submit AI-generated <em>scientific writing</em> verbatim. Your interpretation paragraphs
+      and conclusions must be your own words; you may use Claude to suggest edits to your own
+      prose.</li>
+  </ol>
+
+  <footer>Applications of AI in Ecology &middot; designed for in-person delivery &middot; site last
+    updated 2026-05-17</footer>
+</main>
+</div>
+</body>
+</html>

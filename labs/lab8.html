@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab 8 · Claude Code Pipeline · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="../downloads/index.html">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="../tutorials/python-intro.html">Python Crash Course</a>
+    <a href="../tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="../tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="../tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="../tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="../tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="../tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="../tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="../tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="lab1.html">Lab 1 · Python</a>
+    <a href="lab2.html">Lab 2 · PyTorch</a>
+    <a href="lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="lab5.html">Lab 5 · Species Classifier</a>
+    <a href="lab6.html">Lab 6 · BirdNET</a>
+    <a href="lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="lab8.html" class="current">Lab 8 · Claude Code Pipeline</a>
+    <a href="lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Lab 8 &middot; Build a Camera-Trap Pipeline Using Claude Code</h1>
+
+  <div class="lab-meta">
+    <strong>Worth:</strong> 20 points &nbsp;|&nbsp;
+    <strong>Due:</strong> end of Day 4 &nbsp;|&nbsp;
+    <strong>Files to submit:</strong> the project directory (code + <code>CLAUDE.md</code> + a
+    <code>prompts.md</code> file with every prompt you used), the final tidy CSV
+    <code>final_detections.csv</code>, and a 1-page PDF reflection.<br>
+    <strong>Pre-reading:</strong>
+    <a href="../tutorials/claude-code.html">Claude Code setup</a> and
+    <a href="../tutorials/claude-code-best-practices.html">dos &amp; don'ts</a>.
+  </div>
+
+  <h2>What's different about this lab</h2>
+  <p>You will not write the code. Claude Code will. <strong>You will be graded on the quality of
+    your prompts, not on the lines of code.</strong> The whole point is to learn what an effective
+    AI-assisted research workflow looks like.</p>
+
+  <h2>The pipeline you need to build</h2>
+  <p>Given a folder of raw camera-trap JPEGs from multiple cameras, produce a single tidy CSV
+    with one row per detection:</p>
+  <pre><code>image_id, camera_id, datetime, species_pred, species_confidence,
+det_x1, det_y1, det_x2, det_y2, det_confidence</code></pre>
+
+  <p>It must:</p>
+  <ol>
+    <li>Walk a directory recursively, reading EXIF timestamps.</li>
+    <li>Run MegaDetector for animal localization.</li>
+    <li>For every animal crop, run your <strong>Lab 5</strong> species classifier.</li>
+    <li>Write the tidy CSV.</li>
+    <li>Skip images that have already been processed (resumable).</li>
+    <li>Be runnable from a one-line command: <code>python pipeline.py --input X --output Y</code>.</li>
+    <li>Include a unit test for the EXIF parser using one example image.</li>
+  </ol>
+
+  <h2>Tasks</h2>
+
+  <h3>Task 1 &mdash; set up the project (3 pts)</h3>
+  <ul>
+    <li>Create a new empty folder <code>cc_pipeline/</code>.</li>
+    <li>Write a <code>CLAUDE.md</code> describing the task, the data layout, the conventions you
+      want followed (see the
+      <a href="../tutorials/claude-code.html#section-5">CLAUDE.md template</a>), and where the
+      Lab 5 classifier weights live.</li>
+    <li><code>git init &amp;&amp; git add -A &amp;&amp; git commit -m "before claude"</code>.</li>
+  </ul>
+
+  <h3>Task 2 &mdash; plan-mode prompt (5 pts)</h3>
+  <p>Start Claude Code in plan mode (<code>claude</code>, then
+    <span class="kbd">Shift</span>+<span class="kbd">Tab</span>) and prompt it for a step-by-step
+    plan for the pipeline. <strong>Save the plan Claude produces verbatim into your
+    <code>prompts.md</code></strong> as appendix A.</p>
+
+  <h3>Task 3 &mdash; iterate to a working pipeline (7 pts)</h3>
+  <p>Approve the plan, let it execute, then iterate. Save every prompt you write in
+    <code>prompts.md</code>, in order, with brief annotations describing what each prompt was
+    trying to accomplish.</p>
+  <p>Test the pipeline on a small (~50-image) subset first. Only after it produces sensible
+    output, run it on the full 2,000-image evaluation set.</p>
+
+  <h3>Task 4 &mdash; sanity check (3 pts)</h3>
+  <p>Compare your pipeline's species distribution to your Lab 3 + Lab 5 standalone results. They
+    should match (within rounding). If they don't, debug.</p>
+
+  <h3>Task 5 &mdash; reflection (2 pts)</h3>
+  <p>In 200 words: what did Claude get right immediately? What did it get wrong, and how did you
+    notice? Where did plan mode save you?</p>
+
+  <h2>Grading note &mdash; what we look for in your <code>prompts.md</code></h2>
+  <ul>
+    <li><strong>Specific success criteria</strong> in your asks (e.g., "exit with non-zero on any
+      EXIF parsing failure" beats "handle errors").</li>
+    <li><strong>Catching mistakes</strong>: places where you noticed Claude was about to do
+      something wrong and steered it.</li>
+    <li><strong>Use of <code>CLAUDE.md</code></strong>: did you keep it updated as the project
+      grew?</li>
+    <li><strong>Restraint</strong>: not letting Claude pile on features that weren't asked for.</li>
+  </ul>
+
+  <h2>Go-further</h2>
+  <p>Add an MCP server (R or SQLite) and have Claude write a query that loads the tidy CSV into a
+    database table.</p>
+
+  <h2>Rubric</h2>
+  <table>
+    <tr><th>Component</th><th>Points</th></tr>
+    <tr><td>Project setup (CLAUDE.md + git init + plan)</td><td>5</td></tr>
+    <tr><td>Working pipeline producing correct CSV</td><td>6</td></tr>
+    <tr><td>Quality of saved prompts (plan-mode use, specificity, error-catching)</td><td>5</td></tr>
+    <tr><td>Sanity-check vs Lab 3+5</td><td>2</td></tr>
+    <tr><td>Reflection</td><td>2</td></tr>
+    <tr><th>Total</th><th>20</th></tr>
+  </table>
+
+  <footer>Lab 8 &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>
