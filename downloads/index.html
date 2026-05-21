@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Datasets &amp; Downloads · AI in Ecology</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <h1>AI in Ecology</h1>
+  <div class="subtitle">5-day intensive course</div>
+  <nav>
+    <h3>Course</h3>
+    <a href="../index.html">Syllabus &amp; Home</a>
+    <a href="../schedule.html">Full Schedule</a>
+    <a href="../lectures/index.html">Lecture Slides</a>
+    <a href="index.html" class="current">Datasets &amp; Downloads</a>
+    <a href="../final-project.html">Final Project</a>
+    <h3>Tutorials</h3>
+    <a href="../tutorials/python-intro.html">Python Crash Course</a>
+    <a href="../tutorials/environments.html">Python Environments &amp; Conda</a>
+    <a href="../tutorials/pytorch-intro.html">PyTorch Tutorial</a>
+    <a href="../tutorials/yolo-darknet.html">YOLO &amp; Darknet</a>
+    <a href="../tutorials/bioacoustics.html">Bioacoustics Toolkit</a>
+    <a href="../tutorials/github-intro.html">Git &amp; GitHub for Ecologists</a>
+    <a href="../tutorials/claude-code.html">Claude Code Setup</a>
+    <a href="../tutorials/claude-code-rstudio.html">Claude Code in RStudio</a>
+    <a href="../tutorials/claude-code-best-practices.html">Claude Code: Dos &amp; Don'ts</a>
+    <h3>Labs</h3>
+    <a href="../labs/lab1.html">Lab 1 · Python</a>
+    <a href="../labs/lab2.html">Lab 2 · PyTorch</a>
+    <a href="../labs/lab3.html">Lab 3 · YOLO Detection</a>
+    <a href="../labs/lab4.html">Lab 4 · Train Custom YOLO</a>
+    <a href="../labs/lab5.html">Lab 5 · Species Classifier</a>
+    <a href="../labs/lab6.html">Lab 6 · BirdNET</a>
+    <a href="../labs/lab7.html">Lab 7 · PNW-Cnet &amp; Custom CNN</a>
+    <a href="../labs/lab8.html">Lab 8 · Claude Code Pipeline</a>
+    <a href="../labs/lab9.html">Lab 9 · Parameter Recovery Sim</a>
+    <a href="../labs/lab10.html">Lab 10 · Robust Analysis</a>
+    <a href="../labs/lab11.html">Lab 11 · GUI Workflows</a>
+  </nav>
+</aside>
+
+<main>
+  <h1>Datasets &amp; downloads</h1>
+  <p class="lead">Everything the labs need, pre-bundled. Pick whichever zip matches what
+    you're about to do; you can come back and grab the others later.</p>
+
+  <div class="callout tip">
+    The dataset zips are too large to live in the website's Git repository, so they are
+    hosted as a <a href="https://github.com/taaltree/AI-in-Ecology/releases/tag/datasets">GitHub
+    release</a> (tag <code>datasets</code>). The download links below pull each zip
+    straight from that release &mdash; no GitHub account needed.
+  </div>
+
+  <h2>Course-wide teaching sample</h2>
+
+  <table>
+    <tr><th>File</th><th>Size</th><th>Contents</th><th>Used in</th></tr>
+    <tr>
+      <td><a href="https://github.com/taaltree/AI-in-Ecology/releases/download/datasets/aiecol_data_sample.zip"><strong>aiecol_data_sample.zip</strong></a>
+          <br><small>full bundle</small></td>
+      <td>395 MB</td>
+      <td>200 Oregon Critters camera-trap JPGs + 97 iNaturalist bird recordings +
+          tidy CSVs.</td>
+      <td>All labs (1&ndash;7, 11)</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/taaltree/AI-in-Ecology/releases/download/datasets/aiecol_cameratraps.zip">aiecol_cameratraps.zip</a><br><small>images only</small></td>
+      <td>297 MB</td>
+      <td>200 JPGs (~3840&times;2880) across 7 species + bounding-box CSV
+          (<code>oregon_critters_subset.csv</code>).</td>
+      <td>Labs 1&ndash;5, 8, 11</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/taaltree/AI-in-Ecology/releases/download/datasets/aiecol_audio.zip">aiecol_audio.zip</a><br><small>audio only</small></td>
+      <td>98 MB</td>
+      <td>97 short recordings (~5&ndash;30 s each) across 10 PNW species
+          + index CSV with species, iNat URL, license.</td>
+      <td>Labs 6, 7, 11</td>
+    </tr>
+  </table>
+
+  <h2>What's inside</h2>
+
+  <h3>Camera traps &mdash; Oregon Critters subset</h3>
+  <ul>
+    <li><strong>200 JPGs</strong> drawn from the <a
+        href="https://lila.science/datasets/oregon-critters/">LILA Oregon Critters</a>
+      training split, with one row per bounding-box annotation:
+      <table style="margin-top:6px">
+        <tr><th>species</th><th>count</th></tr>
+        <tr><td>black-tailed deer</td><td>40</td></tr>
+        <tr><td>roosevelt elk</td><td>30</td></tr>
+        <tr><td>douglas squirrel</td><td>30</td></tr>
+        <tr><td>townsend's chipmunk</td><td>30</td></tr>
+        <tr><td>black bear</td><td>25</td></tr>
+        <tr><td>bobcat</td><td>25</td></tr>
+        <tr><td>empty (no animal)</td><td>20</td></tr>
+      </table>
+    </li>
+    <li><code>oregon_critters_subset.csv</code> columns: <code>image, label,
+        category_id, datetime, location, width, height, bbox_x, bbox_y, bbox_w,
+        bbox_h, split, orig_id</code>.</li>
+    <li>License: same as Oregon Critters (CC-BY).</li>
+  </ul>
+
+  <h3>Bioacoustics &mdash; iNaturalist Pacific NW birds</h3>
+  <ul>
+    <li><strong>97 short recordings</strong> from 10 PNW bird species, all
+      <strong>CC-licensed</strong> (cc-by / cc-by-sa / cc-by-nc / cc0) and downloaded
+      from <a href="https://api.inaturalist.org/v1/">iNaturalist</a>:
+      <table style="margin-top:6px">
+        <tr><th>species</th><th>scientific</th><th>count</th></tr>
+        <tr><td>barred owl</td><td>Strix varia</td><td>10</td></tr>
+        <tr><td>northern spotted owl</td><td>Strix occidentalis</td><td>10</td></tr>
+        <tr><td>varied thrush</td><td>Ixoreus naevius</td><td>9</td></tr>
+        <tr><td>pacific wren</td><td>Troglodytes pacificus</td><td>10</td></tr>
+        <tr><td>hermit thrush</td><td>Catharus guttatus</td><td>10</td></tr>
+        <tr><td>pileated woodpecker</td><td>Dryocopus pileatus</td><td>10</td></tr>
+        <tr><td>olive-sided flycatcher</td><td>Contopus cooperi</td><td>10</td></tr>
+        <tr><td>swainson's thrush</td><td>Catharus ustulatus</td><td>10</td></tr>
+        <tr><td>dark-eyed junco</td><td>Junco hyemalis</td><td>10</td></tr>
+        <tr><td>american robin</td><td>Turdus migratorius</td><td>8</td></tr>
+      </table>
+    </li>
+    <li><code>audio_index.csv</code> columns: <code>filename, species,
+        species_latin, inat_obs_id, inat_sound_id, license, place,
+        observed_on, obs_url</code>.</li>
+    <li>Format: <code>.mp3</code> or <code>.wav</code>, mono, 22.05 kHz.</li>
+  </ul>
+
+  <div class="callout note">
+    <strong>Want more data?</strong> Both source datasets are much larger than what we
+    ship. To scale up:
+    <ul style="margin:6px 0">
+      <li><a href="https://lila.science/datasets/oregon-critters/">Oregon Critters</a>
+        on LILA &mdash; 99,909 images, full COCO annotations, free via AzCopy.</li>
+      <li><a href="https://api.inaturalist.org/v1/observations">iNaturalist API</a>
+        &mdash; millions of CC-licensed observations with sounds. The course
+        <a href="https://github.com/anthropics">data-build scripts</a> are shipped in
+        the <code>instructor/scripts/</code> folder if you want to grab a bigger
+        sample.</li>
+    </ul>
+  </div>
+
+  <h2>Where to put the data</h2>
+  <p>Unzip into the project root of whatever Claude Code or RStudio folder you've been
+    working in. The labs all assume the layout below (the zip's top-level folder is
+    called <code>stage/</code>; rename it to <code>data_sample/</code>):</p>
+  <pre><code>your_project/
+├── CLAUDE.md
+├── data_sample/
+│   ├── cameratraps/        200 JPGs
+│   ├── oregon_critters_subset.csv
+│   ├── audio/              97 mp3/wav across 10 species folders
+│   └── audio_index.csv
+└── ... your code ...</code></pre>
+
+  <p>On macOS/Linux:</p>
+  <pre><code>unzip aiecol_data_sample.zip
+mv stage data_sample</code></pre>
+
+  <p>On Windows: right-click the zip &rarr; <em>Extract All</em>, then rename
+    <code>stage</code> to <code>data_sample</code>.</p>
+
+  <h2>Checksums (for the cautious)</h2>
+  <p>If you want to verify your download finished cleanly:</p>
+  <pre><code>aiecol_data_sample.zip   MD5  f012156d9372be7d11393bd20ee61ffc
+aiecol_cameratraps.zip   MD5  af77f1a13ae56ebd8df708ea04ee7dc2
+aiecol_audio.zip         MD5  373c2eca195deccd73873409e47ffe85</code></pre>
+  <p>Generate yours with <code>md5 -q FILE</code> (macOS),
+    <code>md5sum FILE</code> (Linux), or
+    <code>certutil -hashfile FILE MD5</code> (Windows).</p>
+
+  <h2>Pretrained model weights</h2>
+  <p>The labs download these automatically the first time you run them; we list them
+    here so you know what's coming.</p>
+  <table>
+    <tr><th>Weights</th><th>Size</th><th>Source</th><th>Used in</th></tr>
+    <tr><td>ResNet-18 (ImageNet)</td><td>~45 MB</td>
+        <td>torchvision auto-downloads</td><td>Labs 2, 5, 7</td></tr>
+    <tr><td>YOLOv8n (COCO)</td><td>~6 MB</td>
+        <td>Ultralytics auto-downloads</td><td>Labs 3, 4</td></tr>
+    <tr><td>YOLOv8s (COCO)</td><td>~22 MB</td>
+        <td>Ultralytics auto-downloads</td><td>Lab 4 (full run)</td></tr>
+    <tr><td>BirdNET v2.4</td><td>~77 MB</td>
+        <td><code>birdnet</code> package auto-downloads</td><td>Lab 6</td></tr>
+    <tr><td>PNW-Cnet v5</td><td>~120 MB</td>
+        <td><code>pycnet-audio</code> auto-downloads</td><td>Labs 7, 11</td></tr>
+  </table>
+
+  <h2>Licensing summary</h2>
+  <ul>
+    <li><strong>Camera-trap images:</strong> CC-BY, from the LILA Oregon Critters dataset
+      (Beery, Ruff, et al.).</li>
+    <li><strong>Audio recordings:</strong> mixed CC-BY / CC-BY-SA / CC-BY-NC / CC0,
+      from iNaturalist observers. Per-recording license is in
+      <code>audio_index.csv</code>.</li>
+    <li><strong>Course materials (this site, tutorials, labs):</strong> all original
+      writing by the instructor; reuse with attribution is welcomed.</li>
+    <li><strong>Lecture slides:</strong> see the
+      <a href="../lectures/index.html">lecture slides page</a> &mdash; attribution to
+      Sara Beery; please don't redistribute the files.</li>
+  </ul>
+
+  <footer>Datasets &amp; downloads &middot; AI in Ecology</footer>
+</main>
+</div>
+</body>
+</html>
